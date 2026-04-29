@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Printable Pokémon type matchup chart designed as an A4 visual reference." />
+<title>Pokémon Type Matchup Chart</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #eee;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    margin: auto;
+    background: white;
+    padding: 4mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .chart {
+    width: 100%;
+    height: 100%;
+    border: 2.5px solid #111;
+    display: grid;
+    grid-template-rows: repeat(18, minmax(0, 1fr));
+    overflow: hidden;
+  }
+
+  .type-row {
+    display: grid;
+    grid-template-columns: 1fr 35mm 1fr;
+    min-height: 0;
+    height: 100%;
+    border-bottom: 2px solid #111;
+    overflow: hidden;
+  }
+
+  .type-row:last-child { border-bottom: 0; }
+
+  .side {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .cell {
+    display: grid;
+    align-items: center; /* center vertically */
+    justify-items: stretch;
+    gap: 0;
+    padding: 0;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .left .cell {
+    grid-template-columns: minmax(0, 1fr) 28px; /* icon area + defense/effect symbol */
+  }
+
+  .right .cell {
+    grid-template-columns: 28px minmax(0, 1fr); /* attack/effect symbol + icon area */
+  }
+
+  .top-left { background: #dcfce7; border-bottom: 1px dashed #777; }
+  .bottom-left { background: #fee2e2; }
+  .top-right { background: #dcfce7; border-bottom: 1px dashed #777; }
+  .bottom-right { background: #fee2e2; }
+
+  .center-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 2px solid #111;
+    border-right: 2px solid #111;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+
+  .center {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    z-index: 2;
+    background: transparent;
+  }
+
+  .center-icon {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .icon {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    min-width: 0;
+    min-height: 0;
+    display: block;
+  }
+
+  .icon-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .icon-wrap.no-effect::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 50%;
+    border-top: 2px solid #111;
+    transform: rotate(-18deg);
+    transform-origin: center;
+    pointer-events: none;
+  }
+
+  /* icon groups fill their quarter with 1px padding */
+  .type-icons {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* max 4 per row */
+    grid-auto-rows: minmax(0, 1fr);
+    align-items: stretch;
+    justify-items: stretch;
+    gap: 1px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    padding: 1px;
+    overflow: hidden;
+  }
+
+  /* For small counts: keep icons packed, but each icon stays the same max size as a 4-icon row */
+  .type-icons.c1,
+  .type-icons.c2,
+  .type-icons.c3 {
+    display: grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 25%));
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+  }
+
+
+  .type-icons.c5,
+  .type-icons.c6,
+  .type-icons.c7,
+  .type-icons.c8 {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+
+  .type-icons.c9,
+  .type-icons.c10,
+  .type-icons.c11,
+  .type-icons.c12 { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+
+  .left .type-icons { justify-content: flex-end; }
+  .right .type-icons { justify-content: flex-start; }
+
+  .symbol {
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    width: 28px;
+    min-width: 28px;
+    max-width: 28px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    justify-self: center;
+    white-space: nowrap;
+    overflow: visible;
+    z-index: 2;
+  }
+
+  .up { color: #16a34a; }  /* green */
+  .down { color: #dc2626; } /* red */
+
+  .empty {
+    font-size: 7px;
+    font-weight: 900;
+    color: #666;
+  }
+
+
+  .controls {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    z-index: 9999;
+  }
+
+  .controls button,
+  .controls a {
+    appearance: none;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid #bbb;
+    border-radius: 7px;
+    color: #111;
+    padding: 6px 9px;
+    font-size: 12px;
+    font-weight: 800;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  }
+
+  .controls button:hover,
+  .controls a:hover {
+    background: #fff;
+  }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  @media print {
+
+    .controls {
+      display: none !important;
+    }
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      background: white;
+      overflow: hidden;
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 4mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .chart {
+      width: 100%;
+      height: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="controls" aria-label="Page controls">
+  <button type="button" onclick="window.print()">Print</button>
+  <a href="./Pok%C3%A9mon-type-matchup-chart.pdf" download="Pokémon-type-matchup-chart.pdf">Download PDF</a>
+</div>
+
+<noscript>
+  <p style="position: fixed; left: 8px; bottom: 8px; background: white; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font: 12px Arial, sans-serif;">
+    JavaScript is required to build the chart.
+  </p>
+</noscript>
+
+<div class="page">
+  <div class="chart" id="chart"></div>
+</div>
+
+<script>
+const base = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/";
+
+const types = [
+  {key:"normal",id:1,color:"#aaa"},{key:"fighting",id:2,color:"#a00"},{key:"flying",id:3,color:"#88f"},
+  {key:"poison",id:4,color:"#a0f"},{key:"ground",id:5,color:"#c90"},{key:"rock",id:6,color:"#964"},
+  {key:"bug",id:7,color:"#8c4"},{key:"ghost",id:8,color:"#606"},{key:"steel",id:9,color:"#999"},
+  {key:"fire",id:10,color:"#f60"},{key:"water",id:11,color:"#39f"},{key:"grass",id:12,color:"#6c3"},
+  {key:"electric",id:13,color:"#fc0"},{key:"psychic",id:14,color:"#f6a"},{key:"ice",id:15,color:"#6ff"},
+  {key:"dragon",id:16,color:"#33c"},{key:"dark",id:17,color:"#333"},{key:"fairy",id:18,color:"#f9c"}
+];
+const attack = {
+  normal:{good:[],bad:["rock","steel"],none:["ghost"]},
+  fighting:{good:["normal","ice","rock","dark","steel"],bad:["poison","flying","psychic","bug","fairy"],none:["ghost"]},
+  flying:{good:["grass","fighting","bug"],bad:["electric","rock","steel"],none:[]},
+  poison:{good:["grass","fairy"],bad:["poison","ground","rock","ghost"],none:["steel"]},
+  ground:{good:["fire","electric","poison","rock","steel"],bad:["grass","bug"],none:["flying"]},
+  rock:{good:["fire","ice","flying","bug"],bad:["fighting","ground","steel"],none:[]},
+  bug:{good:["grass","psychic","dark"],bad:["fire","fighting","poison","flying","ghost","steel","fairy"],none:[]},
+  ghost:{good:["psychic","ghost"],bad:["dark"],none:["normal"]},
+  steel:{good:["ice","rock","fairy"],bad:["fire","water","electric","steel"],none:[]},
+  fire:{good:["grass","ice","bug","steel"],bad:["fire","water","rock","dragon"],none:[]},
+  water:{good:["fire","ground","rock"],bad:["water","grass","dragon"],none:[]},
+  grass:{good:["water","ground","rock"],bad:["fire","grass","poison","flying","bug","dragon","steel"],none:[]},
+  electric:{good:["water","flying"],bad:["grass","electric","dragon"],none:["ground"]},
+  psychic:{good:["fighting","poison"],bad:["psychic","steel"],none:["dark"]},
+  ice:{good:["grass","ground","flying","dragon"],bad:["fire","water","ice","steel"],none:[]},
+  dragon:{good:["dragon"],bad:["steel"],none:["fairy"]},
+  dark:{good:["psychic","ghost"],bad:["fighting","dark","fairy"],none:[]},
+  fairy:{good:["fighting","dragon","dark"],bad:["fire","poison","steel"],none:[]}
+};
+
+function buildDefense(){
+  const d = {};
+  types.forEach(t => d[t.key] = { weak: [], resist: [], immune: [] });
+  for (const atk in attack) {
+    attack[atk].good.forEach(t => d[t].weak.push(atk));
+    attack[atk].bad.forEach(t => d[t].resist.push(atk));
+    attack[atk].none.forEach(t => d[t].immune.push(atk));
+  }
+  return d;
+}
+
+const defense = buildDefense();
+const byKey = Object.fromEntries(types.map(t => [t.key, t]));
+
+function icon(k, cls = "icon", strike = false) {
+  const img = `<img class="${cls}" src="${base}${byKey[k].id}.png" alt="${k}" title="${k}">`;
+  if (cls !== "icon") return img;
+  return `<span class="icon-wrap ${strike ? "no-effect" : ""}">${img}</span>`;
+}
+
+function list(arr, strikeTypes = []) {
+  if (!arr.length) return `<span class="empty"></span>`;
+  const strikeSet = new Set(strikeTypes);
+  const count = arr.length;
+  const countClass = `c${Math.min(count, 12)}`;
+  return `<span class="type-icons ${countClass}" style="--count:${Math.min(count, 4)}">${arr.map(k => icon(k, "icon", strikeSet.has(k))).join("")}</span>`;
+}
+
+// CHANGED: icons now sit closer to center (right side of left panel)
+function leftCell(className, symbol, arr, strikeTypes = []) {
+  return `<div class="cell ${className}">${list(arr, strikeTypes)}<span class="symbol">${symbol}</span></div>`;
+}
+
+function rightCell(className, symbol, arr, strikeTypes = []) {
+  return `<div class="cell ${className}"><span class="symbol">${symbol}</span>${list(arr, strikeTypes)}</div>`;
+}
+
+function centerBg(t) {
+  return `linear-gradient(180deg, ${t.color} 0%, rgba(255,255,255,0.35) 45%, ${t.color} 100%)`;
+}
+
+function row(t) {
+  const def = defense[t.key];
+  const atk = attack[t.key];
+  const incomingBad = [...def.resist, ...def.immune];
+  const outgoingBad = [...atk.bad, ...atk.none];
+
+  return `
+    <div class="type-row">
+      <div class="side left">
+        ${leftCell("top-left", "🛡️<span class='up'>▲</span>", incomingBad, def.immune)}
+        ${leftCell("bottom-left", "🛡️<span class='down'>▼</span>", def.weak)}
+      </div>
+
+      <div class="center-wrap" style="background: ${centerBg(t)};">
+        <div class="center">
+          ${icon(t.key, "center-icon")}
+        </div>
+      </div>
+
+      <div class="side right">
+        ${rightCell("top-right", "⚔️<span class='up'>▲</span>", atk.good)}
+        ${rightCell("bottom-right", "⚔️<span class='down'>▼</span>", outgoingBad, atk.none)}
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById("chart").innerHTML = types.map(row).join("");
+</script>
+</body>
+</html>
