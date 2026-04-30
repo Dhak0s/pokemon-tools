@@ -223,7 +223,7 @@
     text-decoration: none;
   }
 
-.speed-choice {
+  .speed-choice {
     display: inline-block;
     padding: .15mm .55mm .2mm .55mm;
     border-radius: 999px;
@@ -249,34 +249,19 @@
   }
 
   @media print {
-    
-  .controls-info {
-    margin-top: 6px;
-    padding: 8px;
-    border-top: 1px solid #c9e7ff;
-    font-size: 8pt;
-    line-height: 1.25;
-    color: #073b86;
-  }
-  .controls-info b { font-weight: 900; }
+    .controls-info {
+      margin-top: 6px;
+      padding: 8px;
+      border-top: 1px solid #c9e7ff;
+      font-size: 8pt;
+      line-height: 1.25;
+      color: #073b86;
+    }
+    .controls-info b { font-weight: 900; }
 
-.controls { display: none; }
-  }
-
-
-  .narrow-warning {
-    display: none;
-    width: min(198mm, calc(100% - 24px));
-    margin: 12px auto;
-    padding: 10px 12px;
-    background: #fff7cc;
-    border: 2px solid #e6c200;
-    border-radius: 10px;
-    color: #073b86;
-    font-size: 10pt;
-    font-weight: 900;
-    line-height: 1.25;
-    text-align: center;
+    .controls { 
+      display: none; 
+    }
   }
 
   .scroll-top {
@@ -311,21 +296,7 @@
     background: #0a4ba3;
   }
 
-  @media (max-width: 198mm) {
-    .narrow-warning {
-      display: block;
-    }
-  }
-
-  @media (max-width: 750px) {
-    .narrow-warning {
-      display: block;
-    }
-  }
-
-
   @media print {
-    .narrow-warning,
     .scroll-top {
       display: none;
     }
@@ -462,8 +433,7 @@
 
   @media screen and (max-width: 750px) {
     .screen-note,
-    .controls,
-    .narrow-warning {
+    .controls {
       width: calc(100vw - 24px) !important;
       max-width: calc(100vw - 24px) !important;
       margin-left: auto !important;
@@ -514,9 +484,6 @@
 </style>
 </head>
 <body>
-<div id="narrowWarning" class="narrow-warning">
-  This screen is too narrow to comfortably view the A4 chart. Use a larger display, zoom out, or rotate your device to landscape for a better experience.
-</div>
 <aside class="controls" aria-label="Speed chart controls">
   <div class="controls-title">Competitive data</div>
   <div class="controls-row">
