@@ -1441,10 +1441,21 @@ function renumberPages(container) {
     return 'Base / +Nature / EV / Max';
   }
 
+  function badgeLabel() {
+    if (DISPLAY_SETTINGS.orderByProbableSpeed) return 'LIKELY SPD';
+    if (DISPLAY_SETTINGS.orderBySpeed) return 'BASE SPD';
+    return 'A–Z';
+  }
+
   sheets.forEach((sheet, i) => {
     const sub = sheet.querySelector('.subtitle');
     if (sub) {
       sub.textContent = `${sortLabel()} • ${toggleLabel()} • ${statsLabel()} • Page ${i + 1} of ${total}`;
+    }
+
+    const badge = sheet.querySelector('.badge');
+    if (badge) {
+      badge.textContent = badgeLabel();
     }
   });
 }
