@@ -2,6 +2,11 @@
 Lightweight browser-based tools for competitive Pokémon play and quick reference.
 > Click the tool names below to open them, or download the files to use offline.
 
+## Live Tools
+- [Card Builder](https://dhak0s.github.io/pokemon-tools/card-builder/)
+- [Speed Chart](https://dhak0s.github.io/pokemon-tools/speed-chart/)
+- [Type Chart](https://dhak0s.github.io/pokemon-tools/type-chart/)
+
 ## [Card Builder](https://dhak0s.github.io/pokemon-tools/card-builder/)
 Build and print a reference card for any Pokémon.
 - Paste a Showdown export directly into the name field to auto-fill the whole card
@@ -27,5 +32,12 @@ Printable type effectiveness reference.
 
 ![Type Chart](images/type-chart.png)
 
+## Data Sources
+
+- [PokeAPI](https://pokeapi.co/) — Pokémon data (stats, moves, abilities, items, images)
+- [Smogon](https://www.smogon.com/) — competitive movesets and usage data
+- [Pokémon Showdown](https://pokemonshowdown.com/) — set format compatibility
+
 ---
+
 Fan-made tools. Not affiliated with Nintendo, Game Freak, or The Pokémon Company.
