@@ -138,6 +138,7 @@
   .controls input[type="file"] { display: none; }
   .controls button:disabled { opacity: .55; cursor: wait; }
   #competitiveStatus { display: block; font-size: 8.2pt; font-weight: 800; color: #073b86; line-height: 1.2; }
+  #competitiveStatus.auto-loaded { color: #0f7a28; font-weight: 900; }
   #smogonFile { max-width: 210px; }
 
   .toggle-list {
@@ -207,7 +208,10 @@
     }
     .controls-title { width: 100%; text-align: center; }
     .toggle-list {
-      grid-template-columns: repeat(5, auto);
+      width: 100%;
+      flex: 0 0 100%;
+      grid-template-columns: 1fr;
+      justify-items: start;
       border-top: none;
       padding-top: 0;
     }
@@ -449,8 +453,7 @@
       overflow: visible;
     }
 
-    .controls-row,
-    .toggle-list {
+    .controls-row {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -458,6 +461,9 @@
     }
 
     .toggle-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
       border-top: 1px solid #c9e7ff;
       padding-top: 8px;
     }
@@ -1072,7 +1078,10 @@ function applyCompetitiveText(text, sourceLabel) {
 
   COMPETITIVE_SPEED_HINTS = rankMergedCompetitiveHints(COMPETITIVE_SPEED_MERGED);
 
-  if (status) status.textContent = `Loaded files: ${COMPETITIVE_LOADED_FILES.size}; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+  if (status) {
+    status.classList.remove('auto-loaded');
+    status.textContent = `Loaded files: ${COMPETITIVE_LOADED_FILES.size}; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+  }
   refreshChart();
 }
 
@@ -1124,6 +1133,7 @@ async function loadLatestCompetitiveFileIfAvailable() {
 
     const label = formatName ? `${formatName} ` : '';
     if (status) {
+      status.classList.add('auto-loaded');
       status.textContent = `Automatically loaded the latest ${label}VGC data`;
       status.title = `${found.fileName} loaded locally; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
     }
@@ -1152,7 +1162,10 @@ async function loadMultipleCompetitiveFiles(files) {
   try {
     const removedAutoLatest = removeAutoLoadedLatestData();
 
-    if (status) status.textContent = `Reading ${list.length} Smogon file${list.length === 1 ? '' : 's'}...`;
+    if (status) {
+      status.classList.remove('auto-loaded');
+      status.textContent = `Reading ${list.length} Smogon file${list.length === 1 ? '' : 's'}...`;
+    }
 
     const summaries = [];
     let addedFiles = 0;
@@ -1188,6 +1201,7 @@ async function loadMultipleCompetitiveFiles(files) {
     const totalFiles = COMPETITIVE_LOADED_FILES.size;
 
     if (status) {
+      status.classList.remove('auto-loaded');
       const skipped = skippedFiles ? `; skipped ${skippedFiles} duplicate${skippedFiles === 1 ? '' : 's'}` : '';
       const replaced = removedAutoLatest ? 'Replaced automatically loaded latest data. ' : '';
       status.textContent = `${replaced}Loaded files: ${totalFiles}; Pokémon with competitive data: ${totalLoaded}${skipped}`;
@@ -1196,7 +1210,10 @@ async function loadMultipleCompetitiveFiles(files) {
 
     if (addedFiles) refreshChart();
   } catch (err) {
-    if (status) status.textContent = `Smogon file load failed: ${err.message || err}`;
+    if (status) {
+      status.classList.remove('auto-loaded');
+      status.textContent = `Smogon file load failed: ${err.message || err}`;
+    }
   }
 }
 
@@ -1204,7 +1221,10 @@ async function loadMultipleCompetitiveFiles(files) {
 async function updateCompetitiveData() {
   const status = document.getElementById('competitiveStatus');
   const button = document.getElementById('updateCompetitive');
-  if (status) status.textContent = 'Trying generated Smogon moveset URLs...';
+  if (status) {
+    status.classList.remove('auto-loaded');
+    status.textContent = 'Trying generated Smogon moveset URLs...';
+  }
   if (button) button.disabled = true;
 
   try {
@@ -1212,7 +1232,10 @@ async function updateCompetitiveData() {
     const fileName = url.split('/').pop();
     applyCompetitiveText(text, `${fileName} via ${source}`);
   } catch (err) {
-    if (status) status.textContent = 'Online update blocked. Download the Smogon .txt and use Load Smogon .txt File.';
+    if (status) {
+      status.classList.remove('auto-loaded');
+      status.textContent = 'Online update blocked. Download the Smogon .txt and use Load Smogon .txt File.';
+    }
     console.warn('Smogon online update failed:', err);
   } finally {
     if (button) button.disabled = false;
