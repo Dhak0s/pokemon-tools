@@ -1,5 +1,6 @@
 # Pokémon Competitive Tools
 Lightweight browser-based tools for competitive Pokémon play and quick reference.
+> Click the tool names below to open them, or download the files to use offline.
 
 ## [Card Builder](https://dhak0s.github.io/pokemon-tools/card-builder/)
 Build and print a reference card for any Pokémon.
