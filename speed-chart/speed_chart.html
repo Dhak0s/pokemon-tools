@@ -1,0 +1,1911 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon Speed Chart</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffffff' stroke='%23073b86' stroke-width='4'/%3E%3Cpath d='M4 32h56' stroke='%23073b86' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23eaf7ff' stroke='%23073b86' stroke-width='4'/%3E%3C/svg%3E">
+<style>
+  @page { size: A4 portrait; margin: 9mm 6mm 6mm 6mm; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #eaf7ff; font-family: Arial, Helvetica, sans-serif; color: #111; }
+  .screen-note { padding: 10px 14px; font-size: 14px; background: #fff7cc; border-bottom: 2px solid #e6c200; }
+  #pages { display: block; }
+
+  .sheet {
+    width: 198mm;
+    height: 285mm;
+    margin: 0 auto 10mm auto;
+    background: linear-gradient(#d8f3ff, #ffffff);
+    border: 2mm solid #1785d0;
+    border-radius: 5mm;
+    padding: 4.5mm;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(#ccb7ff, #bed2ff);
+    border-bottom: 1mm solid #1d74c9;
+    margin: -4.5mm -4.5mm 1.5mm -4.5mm;
+    padding: 1mm 4mm 1.2mm 4mm;
+    min-height: 13mm;
+  }
+  .title h1 { margin: 0; font-size: 12.2pt; line-height: 1; color: #073b86; }
+  .title p { margin: .65mm 0 0 0; font-size: 7.2pt; font-weight: 800; }
+  .badge { background: #073b86; color: #fff; border-radius: 999px; padding: 1.5mm 4mm; font-size: 10.5pt; font-weight: 900; letter-spacing: 1px; min-width: 17mm; text-align: center; }
+
+  .legend {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: .8mm;
+    min-height: 6mm;
+    margin: 0 0 1.2mm 0;
+  }
+  .key { color: white; font-size: 7pt; font-weight: 900; padding: .65mm 2.2mm; border-radius: 999px; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+
+  .content {
+    flex: 1 1 auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: var(--page-gap, .75mm);
+    min-height: 0;
+  }
+  
+  .neutral {
+    border-color: #1785d0;
+  }
+
+  .neutral .speed {
+    color: #073b86;
+  }
+  
+  
+  .controls-info {
+    margin-top: 6px;
+    padding: 8px;
+    border-top: 1px solid #c9e7ff;
+    font-size: 8pt;
+    line-height: 1.25;
+    color: #073b86;
+  }
+  .controls-info b { font-weight: 900; }
+
+.controls {
+    position: absolute;
+    top: 12px;
+    left: calc(50% + 101mm + 14px);
+    z-index: 50;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(255,255,255,.96);
+    border: 2px solid #1785d0;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(7,59,134,.18);
+  }
+
+  .controls-title {
+    font-size: 10pt;
+    font-weight: 900;
+    color: #073b86;
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .controls button,
+  .controls a,
+  .file-button {
+    font-weight: 900;
+    font-size: 8.6pt;
+    line-height: 1.05;
+    padding: 6px 9px;
+    border-radius: 999px;
+    border: 2px solid #1785d0;
+    background: #eaf7ff;
+    color: #073b86;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .controls a:hover,
+  .file-button:hover,
+  .controls button:hover { background: #d8f3ff; }
+  .controls input[type="file"] { display: none; }
+  .controls button:disabled { opacity: .55; cursor: wait; }
+  #competitiveStatus { display: block; font-size: 8.2pt; font-weight: 800; color: #073b86; line-height: 1.2; }
+  #smogonFile { max-width: 210px; }
+
+  .toggle-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    padding-top: 4px;
+    border-top: 1px solid #c9e7ff;
+  }
+
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 8.4pt;
+    font-weight: 800;
+    color: #073b86;
+    line-height: 1.1;
+  }
+
+  .toggle-item input {
+    width: 14px;
+    height: 14px;
+    accent-color: #073b86;
+    flex: 0 0 auto;
+  }
+
+  .toggle-item.toggle-disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+
+  body.hide-rank-1 .speed-choice.likely-1,
+  body.hide-rank-2 .speed-choice.likely-2,
+  body.hide-rank-3 .speed-choice.likely-3,
+  body.hide-rank-4 .speed-choice.likely-4 {
+    color: #073b86;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1650px) {
+    
+    .controls-info {
+      margin-top: 6px;
+      padding: 8px;
+      border-top: 1px solid #c9e7ff;
+      font-size: 8pt;
+      line-height: 1.25;
+      color: #073b86;
+    }
+    .controls-info b { font-weight: 900; }
+    .controls {
+      position: static;
+      width: 198mm;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      border: 2px solid #1785d0;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(7,59,134,.18);
+      background: #fff;
+      margin: 50px auto 50px auto;
+    }
+    .controls-title { width: 100%; text-align: center; }
+    .toggle-list {
+      grid-template-columns: repeat(5, auto);
+      border-top: none;
+      padding-top: 0;
+    }
+  }
+
+  body.hide-probable .speed-choice.likely-1,
+  body.hide-probable .speed-choice.likely-2,
+  body.hide-probable .speed-choice.likely-3,
+  body.hide-probable .speed-choice.likely-4 {
+    color: #073b86;
+    background: transparent;
+    border-color: transparent;
+    text-decoration: none;
+  }
+
+.speed-choice {
+    display: inline-block;
+    padding: .15mm .55mm .2mm .55mm;
+    border-radius: 999px;
+    line-height: 1.05;
+  }
+
+  /* Probability ranking: 1 = most likely, 4 = least likely.
+     Uses fill/outline/underline/dot so it still works in print and for colour-blind users. */
+  .speed-choice.likely-1 {
+    color: #01a817;
+  }
+
+  .speed-choice.likely-2 {
+    color: #b3b600;
+  }
+
+  .speed-choice.likely-3 {
+    color: #d87a00;
+  }
+
+  .speed-choice.likely-4 {
+    color: #b40000;
+  }
+
+  @media print {
+    
+  .controls-info {
+    margin-top: 6px;
+    padding: 8px;
+    border-top: 1px solid #c9e7ff;
+    font-size: 8pt;
+    line-height: 1.25;
+    color: #073b86;
+  }
+  .controls-info b { font-weight: 900; }
+
+.controls { display: none; }
+  }
+
+
+  .narrow-warning {
+    display: none;
+    width: min(198mm, calc(100% - 24px));
+    margin: 12px auto;
+    padding: 10px 12px;
+    background: #fff7cc;
+    border: 2px solid #e6c200;
+    border-radius: 10px;
+    color: #073b86;
+    font-size: 10pt;
+    font-weight: 900;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .scroll-top {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 80;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 2px solid #1785d0;
+    background: #073b86;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(7,59,134,.28);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .scroll-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .scroll-top:hover {
+    background: #0a4ba3;
+  }
+
+  @media (max-width: 198mm) {
+    .narrow-warning {
+      display: block;
+    }
+  }
+
+  @media (max-width: 750px) {
+    .narrow-warning {
+      display: block;
+    }
+  }
+
+
+  @media print {
+    .narrow-warning,
+    .scroll-top {
+      display: none;
+    }
+  }
+
+  .section-header {
+    flex: 0 0 var(--header-h, 5.2mm);
+    min-height: var(--header-h, 5.2mm);
+    border-radius: 1.7mm;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+  }
+  .letter-header { background: linear-gradient(90deg, #1d7bb1, #003f61); border: .45mm solid #1785d0; padding-left: 3.5mm; box-shadow: inset 0 -.35mm 0 rgba(23,133,208,.12); }
+  .letter-header span { color: #ffffff; font-size: 13.5pt; font-weight: 900; line-height: 1; }
+  .mega-header { background: linear-gradient(90deg, #1b1b1b, #5d3b91); border: .45mm solid #111; justify-content: center; box-shadow: inset 0 -.35mm 0 rgba(255,255,255,.18); }
+  .mega-header span { color: #fff; font-size: 12.2pt; font-weight: 900; letter-spacing: 1px; line-height: 1; }
+
+  .tile-row {
+    flex: 0 0 var(--row-h, 21mm);
+    height: var(--row-h, 21mm);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: .75mm;
+    min-height: 0;
+    overflow: visible;
+  }
+  .tile {
+    background: #fff;
+    border: .48mm solid #bbb;
+    border-radius: 2.3mm;
+    overflow: hidden;
+    text-align: center;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) 3.7mm 6.2mm;
+    align-items: stretch;
+    padding: .65mm .75mm .8mm .75mm;
+    min-width: 0;
+    min-height: 0;
+  }
+  .sprite-wrap { display: flex; justify-content: center; align-items: center; min-height: 0; height: 100%; overflow: hidden; }
+  img { max-height: 11.2mm; max-width: 11.2mm; width: auto; height: auto; object-fit: contain; display: block; }
+  .placeholder { width: 12mm; height: 12mm; border-radius: 50%; background: #ddefff; border: .55mm solid #1785d0; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #073b86; font-size: 8pt; }
+  .poke-name { font-size: 5.2pt; line-height: 1; font-weight: 800; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 .25mm; }
+  .bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: .3mm 0 .45mm 0;
+    overflow: visible;
+  }
+  .speed {
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 8.5pt;
+    line-height: 1.15;
+    font-weight: 900;
+    padding: .15mm 1mm .25mm 1mm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.4mm;
+  }
+
+  .purple { border-color: #7e3fc8; } .blue { border-color: #177ed6; } .green { border-color: #33a338; } .orange { border-color: #f29b18; } .yellow { border-color: #c9a600; } .red { border-color: #e44133; }
+  .purple .speed { color: #7e3fc8; } .blue .speed { color: #177ed6; } .green .speed { color: #208a25; } .orange .speed { color: #e68600; } .yellow .speed { color: #9c8100; } .red .speed { color: #d8261d; }
+  .purple.key { background: #7e3fc8; } .blue.key { background: #177ed6; } .green.key { background: #33a338; } .orange.key { background: #f29b18; } .yellow.key { background: #c9a600; color:#111; text-shadow:none; } .red.key { background: #e44133; }
+
+  @media print {
+    body { background: white; }
+    .screen-note { display: none; }
+    .sheet { margin: 0; }
+  }
+
+  @media print {
+    html, body {
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      display: block;
+      margin: 0;
+      padding: 0;
+    }
+
+    #pages {
+      width: 198mm;
+      margin: 0 auto;
+    }
+
+    .sheet {
+      margin: 0 auto;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .sheet:first-child {
+      margin-top: 0;
+    }
+  }
+
+
+
+  /* Screen-only responsive A4 scaling.
+     The printed sheet remains the original 198mm x 285mm layout. */
+  @media screen {
+    body {
+      overflow-x: hidden;
+    }
+
+    #pages {
+      width: 100%;
+      max-width: 100%;
+      overflow: visible;
+    }
+
+    .sheet-frame {
+      width: var(--screen-sheet-w, 198mm);
+      height: var(--screen-sheet-h, 285mm);
+      margin: 0 auto 18px auto;
+      overflow: visible;
+      position: relative;
+    }
+
+    .sheet-frame > .sheet {
+      margin: 0;
+      transform: scale(var(--sheet-scale, 1));
+      transform-origin: top left;
+    }
+  }
+
+  @media screen and (max-width: 750px) {
+    .screen-note,
+    .controls,
+    .narrow-warning {
+      width: calc(100vw - 24px) !important;
+      max-width: calc(100vw - 24px) !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      margin-top: 12px !important;
+      margin-bottom: 14px !important;
+      overflow: visible;
+    }
+
+    .controls-row,
+    .toggle-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .toggle-list {
+      border-top: 1px solid #c9e7ff;
+      padding-top: 8px;
+    }
+
+    .controls-info {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  @media print {
+    .sheet-frame {
+      width: auto !important;
+      height: auto !important;
+      margin: 0 !important;
+    }
+
+    .sheet-frame > .sheet {
+      transform: none !important;
+      margin: 0 auto !important;
+    }
+  }
+
+</style>
+</head>
+<body>
+<div id="narrowWarning" class="narrow-warning">
+  This screen is too narrow to comfortably view the A4 chart. Use a larger display, zoom out, or rotate your device to landscape for a better experience.
+</div>
+<aside class="controls" aria-label="Speed chart controls">
+  <div class="controls-title">Competitive data</div>
+  <div class="controls-row">
+    <label class="file-button" for="smogonFile">Load text files</label>
+    <input id="smogonFile" type="file" accept=".txt,text/plain" multiple>
+    <a id="smogonDirectoryLink" href="https://www.smogon.com/stats/2026-03/moveset/" target="_blank" rel="noopener">Smogon data site</a>
+    <button id="printButton">Print</button>
+    <span class="controls-info">The Smogon data site button will load the current month's moveset directory. This button is delayed by 2 days to allow Smogon time to upload the new stats.</span> 
+    <span id="competitiveStatus">No competitive data loaded</span>
+  </div>
+  <div class="toggle-list" aria-label="Highlight controls">
+    <label class="toggle-item"><input id="toggleProbable" type="checkbox" checked> Show probable speed</label>
+    <label class="toggle-item"><input id="toggleLoadedOnly" type="checkbox"> Only show competitive Pokémon</label>
+    <label class="toggle-item"><input id="toggleOnlyLikelySpeed" type="checkbox"> Only show likely speed</label>
+    <label class="toggle-item"><input id="toggleFullyEvolvedOnly" type="checkbox"> Only show fully evolved Pokémon</label>
+    <label class="toggle-item"><input id="toggleSeparateMegas" type="checkbox" checked> Separate Megas</label>
+    <label class="toggle-item"><input id="toggleSpeedSort" type="checkbox"> Order by speed</label>
+    <label class="toggle-item"><input id="toggleProbableSpeedSort" type="checkbox"> Order by likely speed</label>
+  </div>
+
+
+  <div class="controls-info">
+    <b>How to use:</b><br>
+    While this chart can be used without competitive data, it becomes much more useful when you load Smogon moveset files to show which speeds are most likely for each Pokémon based on real competitive usage.<br><br>
+
+    <b>Automatic loading:</b><br>
+    If this file is hosted, it can automatically load a file called 'latest.txt' from the same directory. This automatic load can be overriden by loading your own files. You can combine and rename smogon moveset files to create your own latest.txt<br><br>
+    
+    <b>Downloading files:</b><br>
+    Click the Smogon data site button to navigate to the Smogon moveset directory.<br>
+    Look for the text files that follow your formats naming convention.<br><br>
+    Examples:<br>
+    <b>gen9vgc2026regibo3-1630.txt</b><br>
+    <b>gen9vgc2026regma-1760.txt</b><br><br>
+    Right click on the file and choose "Save link as..." to download it to your device.<br><br>
+    Note: It can be useful to dowload multiple files to get a more complete picture, as not all Pokémon are used in every format or rating tier. For example, if you're interested in the Pokémon Champions format, look for files with "regma" in the name, but also consider downloading files from other recent formats and ratings to see a broader range of competitive usage.<br><br>
+    Don't know how to read the Smogon file names? Here's a quick guide:<br>
+    • <b>gen9</b> = Generation 9 Pokémon (Scarlet/Violet)<br>
+    • <b>vgc</b> = Video Game Championships, the main competitive format for Pokémon on consoles<br>
+    • <b>2026</b> = The year the stats were recorded<br>
+    • <b>regma</b> = Regulation M-A, the current ruleset for Pokémon Champions format<br>
+    • <b>bo3</b> = Best of 3 format (if this is not present, it is best of 1)<br>
+    • <b>1630</b> = Smogon rating tier (download all the different tiers for a more complete picture (1500, 1630, 1760))<br><br>
+
+    <b>Loading files:</b><br>
+    Click <b>Load text files</b> and select the Smogon moveset files you downloaded (you can select multiple files at once).<br><br>
+    By default, the chart will show all Pokémon with their full range of possible speeds based on their base stat / nature / max EV / nature & max EV. Once you load competitive data, it will highlight the most commonly used speed spreads for each Pokémon based on the moveset files you provided.<br><br>
+    The colors indicate the likelihood of each speed tier based on competitive usage. In order of likelyhood: Green (most likely) → Yellow → Orange → Red (least likely)<br><br>
+
+    <b>Toggles:</b><br>
+    • <b>Show Probable Speed</b> Shows the colours for competitive usage<br>
+    • <b>Only show competitive Pokémon</b> Hides Pokémon that don't appear in the competitive data you loaded<br>
+    • <b>Only show likely speed</b> Hides all but the most likely speed based on competitive data<br>
+    • <b>Only show fully evolved Pokémon</b> Hides Pokémon that aren't fully evolved forms<br>
+    • <b>Separate Megas</b> Keeps Mega forms in their own section; turn off to alphabetize them with everything else<br>
+    • <b>Order by speed</b> Sorts the Pokémon in order of their base speed stat, rather than alphabetically<br>
+    • <b>Order by likely speed</b> Sorts the Pokémon in order of their most likely competitive speed, rather than alphabetically<br><br>
+    
+    <b>Printing:</b><br>
+    This chart is designed to be printed on A4 paper. Click the Print button to open the print dialog. Make sure to set the print scaling to 100% (or "Actual size") to ensure the chart prints correctly. The controls will not be included in the printout.<br><br>
+    <b>Note:</b><br>
+    The competitive data is based on Smogon's VGC moveset usage statistics, which are updated at the beginning of each month. The chart will show the most likely speeds for each Pokémon based on the moveset files you load, but keep in mind that actual competitive usage can vary and may not be fully captured by the available data. Always consider checking the latest Smogon stats for the most up-to-date information on competitive Pokémon usage and speeds.
+    All pokemon sprites and data are sourced from the official PokeAPI and are accurate as of June 2024.<br>
+  </div>
+
+</aside>
+<button id="scrollTopButton" class="scroll-top" type="button" aria-label="Scroll to top">↑</button>
+<div id="pages"></div>
+<script>
+const PER_ROW = 5;
+const CSV = {
+  species: 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species.csv',
+  pokemon: 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv',
+  stats: 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_stats.csv'
+};
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cur = '', quote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i + 1];
+    if (c === '"') {
+      if (quote && n === '"') { cur += '"'; i++; }
+      else quote = !quote;
+    } else if (c === ',' && !quote) {
+      row.push(cur); cur = '';
+    } else if ((c === '\n' || c === '\r') && !quote) {
+      if (c === '\r' && n === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.some(v => v !== '')) rows.push(row);
+      row = [];
+    } else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  const header = rows.shift();
+  return rows.map(r => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ''])));
+}
+
+function calcSpeedStat(baseSpeed, ev = 0, nature = 1.0) {
+  const level = 50;
+  const iv = 31;
+  const raw = Math.floor(((2 * baseSpeed + iv + Math.floor(ev / 4)) * level) / 100) + 5;
+  return Math.floor(raw * nature);
+}
+
+function speedSpreadValues(baseSpeed) {
+  return [
+    { bucket: 'base', label: 'Base', value: calcSpeedStat(baseSpeed, 0, 1.0) },
+    { bucket: 'nature', label: '+Nature', value: calcSpeedStat(baseSpeed, 0, 1.1) },
+    { bucket: 'ev', label: 'Max EV', value: calcSpeedStat(baseSpeed, 252, 1.0) },
+    { bucket: 'max', label: '+Nature & Max EV', value: calcSpeedStat(baseSpeed, 252, 1.1) }
+  ];
+}
+
+function speedSpread(baseSpeed) {
+  return speedSpreadValues(baseSpeed).map(v => v.value).join(' / ');
+}
+
+function speedBucket(speedEV, natureName) {
+  const plusSpeed = ['jolly', 'timid', 'hasty', 'naive'].includes(String(natureName).toLowerCase());
+
+  if (speedEV >= 252 && plusSpeed) return 'max';
+  if (speedEV >= 252) return 'ev';
+  if (plusSpeed) return 'nature';
+  return 'base';
+}
+
+async function loadCSV(url) {
+  const res = await fetch(url, { cache: 'force-cache' });
+  if (!res.ok) throw new Error(`${res.status} ${url}`);
+  return parseCSV(await res.text());
+}
+
+function colourForSpeed(speed) {
+  return 'neutral';
+}
+
+function titleCase(s) {
+  return s.split(/[-\s]+/).filter(Boolean).map(part => {
+    if (part === 'mr') return 'Mr.';
+    if (part === 'mime') return 'Mime';
+    if (part === 'jr') return 'Jr.';
+    if (part === 'ho') return 'Ho';
+    if (part === 'oh') return 'Oh';
+    if (part === 'type') return 'Type';
+    if (part.length === 1) return part.toUpperCase();
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  }).join(' ')
+    .replace('Ho Oh', 'Ho-Oh')
+    .replace('Porygon Z', 'Porygon-Z')
+    .replace('Jangmo O', 'Jangmo-o')
+    .replace('Hakamo O', 'Hakamo-o')
+    .replace('Kommo O', 'Kommo-o')
+    .replace('Farfetch D', "Farfetch'd")
+    .replace('Sirfetch D', "Sirfetch'd");
+}
+
+function displayName(identifier, speciesIdentifier) {
+  const id = identifier.toLowerCase();
+  const species = titleCase(speciesIdentifier);
+  const suffix = id.startsWith(speciesIdentifier + '-') ? id.slice(speciesIdentifier.length + 1) : '';
+  if (!suffix) return species;
+
+  const tokens = suffix.split('-');
+  const region = { alola: 'Alolan', galar: 'Galarian', hisui: 'Hisuian', paldea: 'Paldean' };
+  if (tokens[0] === 'mega') return `Mega ${species}${tokens[1] ? ' ' + tokens[1].toUpperCase() : ''}`;
+  if (region[tokens[0]]) return `${region[tokens[0]]} ${species}${tokens.length > 1 ? ' ' + titleCase(tokens.slice(1).join('-')) : ''}`;
+  if (tokens[0] === 'primal') return `Primal ${species}`;
+  if (tokens[0] === 'origin') return `${species} Origin`;
+  if (tokens[0] === 'altered') return `${species} Altered`;
+  if (tokens[0] === 'therian') return `${species} Therian`;
+  if (tokens[0] === 'incarnate') return `${species} Incarnate`;
+  if (tokens[0] === 'school') return `${species} School`;
+  if (tokens[0] === 'solo') return `${species} Solo`;
+  if (tokens[0] === 'complete') return `${species} Complete`;
+  if (tokens[0] === '10' || tokens[0] === '50') return `${species} ${tokens[0]}%`;
+  if (tokens[0] === 'totem') return `${species} Totem`;
+  if (tokens[0] === 'starter') return `${species} Starter`;
+  if (tokens[0] === 'battle' || tokens[0] === 'bond') return `${species} ${titleCase(suffix)}`;
+  return `${species} ${titleCase(suffix)}`;
+}
+
+function slugName(identifier) {
+  return identifier
+    .replace('-mega-x', '-mega').replace('-mega-y', '-mega')
+    .replace('-alola', '-alolan').replace('-galar', '-galarian').replace('-hisui', '-hisuian')
+    .replace('-paldea', '-paldean');
+}
+
+function initialPlaceholder(name) {
+  return name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || '??';
+}
+
+function uniqueList(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function pokemonSpriteSources(p, speciesIdentifier) {
+  const idNum = Number(p.idNum);
+  const speciesNum = Number(p.speciesNum);
+  const dbSlug = slugName(p.identifier);
+  const dbSpeciesSlug = speciesIdentifier;
+
+  // PokeAPI HOME sprites are incomplete for many high-ID alternate forms.
+  // Starting those at the form HOME URL creates a wall of avoidable 404s.
+  // Use species artwork first for high-ID forms, then fall back if needed.
+  if (idNum >= 10000) {
+    return uniqueList([
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${speciesNum}.png`,
+      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesNum}.png`,
+      `https://img.pokemondb.net/sprites/home/normal/${dbSlug}.png`,
+      `https://img.pokemondb.net/sprites/home/normal/${dbSpeciesSlug}.png`
+    ]);
+  }
+
+  return uniqueList([
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${idNum}.png`,
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idNum}.png`,
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${speciesNum}.png`,
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesNum}.png`,
+    `https://img.pokemondb.net/sprites/home/normal/${dbSlug}.png`,
+    `https://img.pokemondb.net/sprites/home/normal/${dbSpeciesSlug}.png`
+  ]);
+}
+
+async function buildPokemonData() {
+  const [speciesRows, pokemonRows, statRows] = await Promise.all([
+    loadCSV(CSV.species), loadCSV(CSV.pokemon), loadCSV(CSV.stats)
+  ]);
+
+  const speciesById = new Map(speciesRows.map(s => [Number(s.id), s]));
+  const evolvesFrom = new Set(speciesRows.map(s => Number(s.evolves_from_species_id)).filter(Boolean));
+  const fullyEvolvedSpecies = new Set(speciesRows.filter(s => !evolvesFrom.has(Number(s.id))).map(s => Number(s.id)));
+  const speedByPokemonId = new Map(statRows.filter(s => Number(s.stat_id) === 6).map(s => [Number(s.pokemon_id), Number(s.base_stat)]));
+
+  const rows = pokemonRows
+    .map(p => ({
+      ...p,
+      idNum: Number(p.id),
+      speciesNum: Number(p.species_id),
+      speed: speedByPokemonId.get(Number(p.id)),
+      isFullyEvolved: fullyEvolvedSpecies.has(Number(p.species_id))
+    }))
+    .filter(p => Number.isFinite(p.speed))
+    .filter(p => !p.identifier.includes('-totem'))
+    .filter(p => !p.identifier.includes('-gmax'));
+    
+  return rows.map(p => {
+    const species = speciesById.get(p.speciesNum);
+    const name = displayName(p.identifier, species.identifier);
+    const isMega = p.identifier.includes('-mega');
+    const section = isMega ? 'MEGA POKÉMON' : name[0].toUpperCase();
+    const spriteSources = pokemonSpriteSources(p, species.identifier);
+    const src = spriteSources[0] || '';
+    const fallbacks = spriteSources.slice(1).join('|');
+    return {
+      section,
+      name,
+      competitiveName: p.identifier,
+      isMega,
+      megaSortName: isMega ? name.replace(/\bMega\b/gi, '').trim() : name,
+      alphaSection: name[0].toUpperCase(),
+      isFullyEvolved: p.isFullyEvolved,
+      speed: p.speed,
+      color: colourForSpeed(p.speed),
+      src,
+      fallbacks,
+      placeholder: initialPlaceholder(name),
+      alt: name,
+      sortKey: (() => {
+        const base = name.toUpperCase();
+        const normalized = isMega
+          ? 'MEGA ' + base.replace(/\bMEGA\b/g, '').trim()
+          : base;
+
+        return `${isMega ? '2_' : '1_'}${normalized}`;
+      })()
+    };
+  }).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+}
+
+const SMOGON_STATS_BASE = 'https://www.smogon.com/stats/';
+const SMOGON_PRIMARY_RATING = 1630;
+const SMOGON_EXTRA_RATING = 1760;
+const SMOGON_RATINGS = [SMOGON_PRIMARY_RATING, SMOGON_EXTRA_RATING];
+const SMOGON_REG_FALLBACKS_BY_YEAR = {
+  // Regulation M-A is the Pokémon Champions format. March 2026 stats predate it,
+  // so Reg I remains first until April 2026 stats are the latest completed month.
+  2026: ['i', 'f'],
+  2025: ['h', 'g', 'f']
+};
+
+function latestCompletedStatsMonth(date = new Date()) {
+  const d = new Date(date.getFullYear(), date.getMonth(), 0);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+function smogonMovesetDirectory(month = latestCompletedStatsMonth()) {
+  return `${SMOGON_STATS_BASE}${month}/moveset/`;
+}
+
+function smogonRegCandidates(year = new Date().getFullYear(), month = latestCompletedStatsMonth()) {
+  if (year === 2026 && month >= '2026-04') {
+    // Expected Smogon filename form for Pokémon Champions Regulation M-A.
+    // The hyphen is normally stripped in stats filenames: reg m-a -> regma.
+    return ['ma', 'i', 'f'];
+  }
+
+  const known = SMOGON_REG_FALLBACKS_BY_YEAR[year];
+  if (known) return known;
+  return 'zyxwvutsrqponmlkjihgfedcba'.split('');
+}
+
+function buildSmogonCandidateUrls(ratings = SMOGON_RATINGS) {
+  const year = new Date().getFullYear();
+  const month = latestCompletedStatsMonth();
+  const directory = smogonMovesetDirectory(month);
+  const urls = [];
+
+  // Smogon generation numbers are Pokémon generations, not search-attempt counters.
+  // Gen 9 is the current Scarlet/Violet competitive generation, so put it first.
+  const currentLikelyGen = 9;
+  const gens = [];
+  for (let gen = currentLikelyGen; gen >= 1; gen--) gens.push(gen);
+
+  for (const rating of ratings) {
+    for (const gen of gens) {
+      for (const reg of smogonRegCandidates(year, month)) {
+        urls.push(`${directory}gen${gen}vgc${year}reg${reg}bo3-${rating}.txt`);
+      }
+    }
+  }
+
+  for (const rating of ratings) {
+    for (const gen of gens) {
+      for (const reg of smogonRegCandidates(year, month)) {
+        urls.push(`${directory}gen${gen}vgc${year}reg${reg}-${rating}.txt`);
+      }
+    }
+  }
+
+  // Known-good March 2026 fallbacks.
+  urls.push(`${directory}gen9vgc2026regibo3-1630.txt`);
+  urls.push(`${directory}gen9vgc2026regibo3-1760.txt`);
+  urls.push(`${directory}gen9vgc2026regi-1630.txt`);
+  urls.push(`${directory}gen9vgc2026regi-1760.txt`);
+  return [...new Set(urls)];
+}
+
+function updateSmogonDownloadLinks() {
+  const primaryCandidates = buildSmogonCandidateUrls([SMOGON_PRIMARY_RATING]);
+  const extraCandidates = buildSmogonCandidateUrls([SMOGON_EXTRA_RATING]);
+  const recommended = document.getElementById('recommendedSmogonDownload');
+  const recommended1760 = document.getElementById('recommendedSmogonDownload1760');
+  const directory = document.getElementById('smogonDirectoryLink');
+  const month = latestCompletedStatsMonth();
+
+  if (recommended) {
+    recommended.href = primaryCandidates[0];
+    recommended.title = `Best guess: ${primaryCandidates[0].split('/').pop()} — if this 404s, use the directory link.`;
+  }
+
+  if (recommended1760) {
+    recommended1760.href = extraCandidates[0];
+    recommended1760.title = `Optional high-ladder add-on: ${extraCandidates[0].split('/').pop()} — load this together with the 1630 file.`;
+  }
+
+  if (directory) {
+    directory.href = smogonMovesetDirectory(month);
+    directory.title = 'Smogon moveset directory for the latest completed month';
+  }
+}
+
+const SMOGON_COMPETITIVE_URLS = buildSmogonCandidateUrls();
+let COMPETITIVE_SPEED_HINTS = {};
+let COMPETITIVE_SPEED_MERGED = {};
+const COMPETITIVE_LOADED_FILES = new Set();
+let AUTO_LOADED_LATEST_KEY = null;
+let AUTO_LOADED_LATEST_LABEL = null;
+const DISPLAY_SETTINGS = {
+  showProbable: true,
+  onlyLikelySpeed: false,
+  loadedOnly: false,
+  fullyEvolvedOnly: false,
+  separateMegas: true,
+  orderBySpeed: false,
+  orderByProbableSpeed: false
+};
+
+function normaliseCompetitiveName(name) {
+  return String(name)
+    .toLowerCase()
+    .replace(/forme/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function parseSmogonMoveset(text) {
+  const result = {};
+  const blocks = text.split(/\+[-]+\+\s*\n(?=\|\s*[^|]+\s*\|\s*\n\+[-]+\+)/g);
+
+  for (const block of blocks) {
+    const nameMatch = block.match(/^\|\s*([^|]+?)\s*\|\s*$/m);
+    if (!nameMatch) continue;
+
+    const pokemonName = nameMatch[1].trim();
+    if (!pokemonName || ['Abilities', 'Items', 'Spreads', 'Moves', 'Tera Types', 'Teammates'].includes(pokemonName)) continue;
+
+    const spreadsMatch = block.match(/\|\s*Spreads\s*\|([\s\S]*?)(?=\+[-]+\+)/);
+    if (!spreadsMatch) continue;
+
+    const buckets = {};
+    const spreadRegex = /\|\s*([A-Za-z]+):(\d+)\/(\d+)\/(\d+)\/(\d+)\/(\d+)\/(\d+)\s+([\d.]+)%\s*\|/g;
+    let m;
+    while ((m = spreadRegex.exec(spreadsMatch[1])) !== null) {
+      const nature = m[1];
+      const speedEV = Number(m[7]);
+      const usage = Number(m[8]);
+      const bucket = speedBucket(speedEV, nature);
+      buckets[bucket] = (buckets[bucket] || 0) + usage;
+    }
+
+    const ranked = Object.entries(buckets)
+      .map(([bucket, usage]) => ({ bucket, usage }))
+      .sort((a, b) => b.usage - a.usage)
+      .slice(0, 4);
+
+    if (ranked.length) {
+      result[normaliseCompetitiveName(pokemonName)] = ranked;
+    }
+  }
+
+  return result;
+}
+
+function smogonFetchUrls(url) {
+  return [
+    { label: 'direct Smogon', url },
+    { label: 'AllOrigins proxy', url: `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
+    { label: 'corsproxy.io proxy', url: `https://corsproxy.io/?${encodeURIComponent(url)}` }
+  ];
+}
+
+async function fetchTextWithFallback(url) {
+  const errors = [];
+
+  for (const source of smogonFetchUrls(url)) {
+    try {
+      const res = await fetch(source.url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+
+      const text = await res.text();
+      if (!/\|\s*Spreads\s*\|/.test(text)) throw new Error('response did not contain Smogon moveset data');
+
+      return { text, source: source.label };
+    } catch (err) {
+      errors.push(`${source.label}: ${err.message || err}`);
+    }
+  }
+
+  throw new Error(errors.join(' | '));
+}
+
+async function fetchFirstWorkingSmogonFile() {
+  const errors = [];
+
+  for (const url of SMOGON_COMPETITIVE_URLS) {
+    try {
+      const result = await fetchTextWithFallback(url);
+      return { ...result, url };
+    } catch (err) {
+      errors.push(`${url.split('/').pop()}: ${err.message || err}`);
+    }
+  }
+
+  throw new Error(errors.join(' | '));
+}
+
+function mergeCompetitiveHints(target, parsed, weight = 1) {
+  for (const [name, spreads] of Object.entries(parsed)) {
+    if (!target[name]) target[name] = {};
+
+    // Normalize each Pokémon inside each file so every loaded file contributes
+    // one comparable vote distribution, regardless of how many visible spread
+    // lines Smogon printed for that Pokémon.
+    const total = spreads.reduce((sum, spread) => sum + (Number(spread.usage) || 0), 0);
+    if (!total) continue;
+
+    for (const spread of spreads) {
+      const normalizedUsage = ((Number(spread.usage) || 0) / total) * 100;
+      target[name][spread.bucket] = (target[name][spread.bucket] || 0) + normalizedUsage * weight;
+    }
+  }
+}
+
+function rankMergedCompetitiveHints(merged) {
+  const bucketOrder = ['base', 'nature', 'ev', 'max'];
+
+  return Object.fromEntries(
+    Object.entries(merged).map(([name, buckets]) => {
+      const ranked = bucketOrder
+        .map(bucket => ({ bucket, usage: Number(buckets[bucket] || 0) }))
+        .sort((a, b) => b.usage - a.usage || bucketOrder.indexOf(a.bucket) - bucketOrder.indexOf(b.bucket));
+      return [name, ranked];
+    })
+  );
+}
+
+function resetCompetitiveData() {
+  COMPETITIVE_SPEED_HINTS = {};
+  COMPETITIVE_SPEED_MERGED = {};
+  COMPETITIVE_LOADED_FILES.clear();
+  AUTO_LOADED_LATEST_KEY = null;
+  AUTO_LOADED_LATEST_LABEL = null;
+}
+
+function removeAutoLoadedLatestData() {
+  if (!AUTO_LOADED_LATEST_KEY) return false;
+
+  // Rebuild from scratch without the auto-loaded latest data.
+  COMPETITIVE_SPEED_HINTS = {};
+  COMPETITIVE_SPEED_MERGED = {};
+  COMPETITIVE_LOADED_FILES.clear();
+  AUTO_LOADED_LATEST_KEY = null;
+  AUTO_LOADED_LATEST_LABEL = null;
+  return true;
+}
+
+function latestDisplayNameFromText(text) {
+  const firstLine = String(text || '').split(/\r?\n/)[0].trim();
+
+  // If the file starts directly with Smogon table formatting, there is no custom label.
+  if (!firstLine || firstLine.startsWith('+') || firstLine.startsWith('|')) {
+    return '';
+  }
+
+  return firstLine;
+}
+
+
+
+async function findLatestLocalFile() {
+  // Auto-load only checks for ./latest.txt.
+  // The first line of latest.txt is used as the displayed format name.
+  const fileName = 'latest.txt';
+  const url = new URL(fileName, window.location.href);
+
+  try {
+    const res = await fetch(url.href, { cache: 'no-store' });
+    if (!res.ok) {
+      console.info(`No ${fileName} found at ${url.href}`);
+      return null;
+    }
+
+    const text = await res.text();
+
+    if (!/\|\s*Spreads\s*\|/.test(text)) {
+      console.warn(`${fileName} was found, but it does not look like a Smogon moveset file.`);
+      return null;
+    }
+
+    return { fileName, text };
+  } catch (err) {
+    console.info(`Could not load ${fileName}:`, err);
+    return null;
+  }
+}
+
+
+
+function applyCompetitiveText(text, sourceLabel) {
+  const status = document.getElementById('competitiveStatus');
+  const parsed = parseSmogonMoveset(text);
+  const loaded = Object.keys(parsed).length;
+
+  if (!loaded) {
+    throw new Error('No Smogon spread data found in that file');
+  }
+
+  const sourceKey = `online|${sourceLabel}`;
+  if (!COMPETITIVE_LOADED_FILES.has(sourceKey)) {
+    mergeCompetitiveHints(COMPETITIVE_SPEED_MERGED, parsed, 1);
+    COMPETITIVE_LOADED_FILES.add(sourceKey);
+  }
+
+  COMPETITIVE_SPEED_HINTS = rankMergedCompetitiveHints(COMPETITIVE_SPEED_MERGED);
+
+  if (status) status.textContent = `Loaded files: ${COMPETITIVE_LOADED_FILES.size}; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+  refreshChart();
+}
+
+function extractFormatName(text) {
+  const lines = text.split(/\r?\n/);
+
+  let formatName = '';
+  let cleanedLines = [];
+
+  for (const line of lines) {
+    const match = line.match(/^\s*name\s*:?\s*(.+)$/i);
+
+    if (match && !formatName) {
+      formatName = match[1].trim();
+      continue; // remove this line from dataset
+    }
+
+    cleanedLines.push(line);
+  }
+
+  return {
+    formatName,
+    cleanedText: cleanedLines.join('\n')
+  };
+}
+
+async function loadLatestCompetitiveFileIfAvailable() {
+  const status = document.getElementById('competitiveStatus');
+
+  try {
+    const found = await findLatestLocalFile();
+    if (!found) return false;
+
+    const { formatName, cleanedText } = extractFormatName(found.text);
+
+    const parsed = parseSmogonMoveset(cleanedText);
+    const loaded = Object.keys(parsed).length;
+
+    if (!loaded) return false;
+
+    const sourceKey = `auto|${found.fileName}`;
+
+    mergeCompetitiveHints(COMPETITIVE_SPEED_MERGED, parsed, 1);
+    COMPETITIVE_LOADED_FILES.add(sourceKey);
+    AUTO_LOADED_LATEST_KEY = sourceKey;
+    AUTO_LOADED_LATEST_LABEL = formatName || found.fileName;
+
+    COMPETITIVE_SPEED_HINTS = rankMergedCompetitiveHints(COMPETITIVE_SPEED_MERGED);
+
+    const label = formatName ? `${formatName} ` : '';
+    if (status) {
+      status.textContent = `Automatically loaded the latest ${label}VGC data`;
+      status.title = `${found.fileName} loaded locally; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+    }
+
+    refreshChart();
+    return true;
+  } catch (err) {
+    console.info('No local latest.txt competitive data loaded:', err);
+    return false;
+  }
+}
+
+
+
+
+async function loadCompetitiveFile(file) {
+  if (!file) return;
+  return loadMultipleCompetitiveFiles([file]);
+}
+
+async function loadMultipleCompetitiveFiles(files) {
+  const status = document.getElementById('competitiveStatus');
+  const list = Array.from(files || []);
+  if (!list.length) return;
+
+  try {
+    const removedAutoLatest = removeAutoLoadedLatestData();
+
+    if (status) status.textContent = `Reading ${list.length} Smogon file${list.length === 1 ? '' : 's'}...`;
+
+    const summaries = [];
+    let addedFiles = 0;
+    let skippedFiles = 0;
+
+    for (const file of list) {
+      const fileKey = `${file.name}|${file.size}|${file.lastModified}`;
+
+      if (COMPETITIVE_LOADED_FILES.has(fileKey)) {
+        skippedFiles += 1;
+        summaries.push(`${file.name} skipped duplicate`);
+        continue;
+      }
+
+      const text = await file.text();
+      const parsed = parseSmogonMoveset(text);
+      const loaded = Object.keys(parsed).length;
+
+      if (!loaded) {
+        throw new Error(`${file.name}: no Smogon spread data found`);
+      }
+
+      const weight = file.name.includes('1760') ? 1.35 : 1;
+      mergeCompetitiveHints(COMPETITIVE_SPEED_MERGED, parsed, weight);
+      COMPETITIVE_LOADED_FILES.add(fileKey);
+
+      addedFiles += 1;
+      summaries.push(`${file.name} (${loaded})`);
+    }
+
+    COMPETITIVE_SPEED_HINTS = rankMergedCompetitiveHints(COMPETITIVE_SPEED_MERGED);
+    const totalLoaded = Object.keys(COMPETITIVE_SPEED_HINTS).length;
+    const totalFiles = COMPETITIVE_LOADED_FILES.size;
+
+    if (status) {
+      const skipped = skippedFiles ? `; skipped ${skippedFiles} duplicate${skippedFiles === 1 ? '' : 's'}` : '';
+      const replaced = removedAutoLatest ? 'Replaced automatically loaded latest data. ' : '';
+      status.textContent = `${replaced}Loaded files: ${totalFiles}; Pokémon with competitive data: ${totalLoaded}${skipped}`;
+      status.title = summaries.join(' | ');
+    }
+
+    if (addedFiles) refreshChart();
+  } catch (err) {
+    if (status) status.textContent = `Smogon file load failed: ${err.message || err}`;
+  }
+}
+
+
+async function updateCompetitiveData() {
+  const status = document.getElementById('competitiveStatus');
+  const button = document.getElementById('updateCompetitive');
+  if (status) status.textContent = 'Trying generated Smogon moveset URLs...';
+  if (button) button.disabled = true;
+
+  try {
+    const { text, source, url } = await fetchFirstWorkingSmogonFile();
+    const fileName = url.split('/').pop();
+    applyCompetitiveText(text, `${fileName} via ${source}`);
+  } catch (err) {
+    if (status) status.textContent = 'Online update blocked. Download the Smogon .txt and use Load Smogon .txt File.';
+    console.warn('Smogon online update failed:', err);
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+
+function getLikelySpeedValue(p) {
+  const values = speedSpreadValues(p.speed);
+  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
+  const hints = COMPETITIVE_SPEED_HINTS[hintKey] || [];
+
+  if (!hints.length) {
+    return values.find(v => v.bucket === 'base').value;
+  }
+
+  const likelyBucket = hints[0].bucket;
+  const match = values.find(v => v.bucket === likelyBucket);
+  return match ? match.value : values.find(v => v.bucket === 'base').value;
+}
+
+function renderSpeedSpread(p) {
+  const values = speedSpreadValues(p.speed);
+  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
+  const hints = COMPETITIVE_SPEED_HINTS[hintKey] || [];
+  const hasCompetitiveData = hints.length > 0;
+
+  // Only collapse to one speed if this Pokémon actually has loaded Smogon data.
+  // Pokémon without loaded competitive data keep all four reference speeds.
+  if (DISPLAY_SETTINGS.onlyLikelySpeed && hasCompetitiveData) {
+    const likelyBucket = hints[0].bucket;
+    const chosen = values.find(v => v.bucket === likelyBucket) || values.find(v => v.bucket === 'base') || values[0];
+    const usage = ` - normalized Smogon probability score: ${hints[0].usage.toFixed(1)}`;
+    const cls = DISPLAY_SETTINGS.showProbable ? ' likely-1' : '';
+    return `<span class="speed-choice${cls}" title="${chosen.label} - rank 1${usage}">${chosen.value}</span>`;
+  }
+
+  return values.map(v => {
+    const rank = hints.findIndex(h => h.bucket === v.bucket);
+    const rankNumber = rank >= 0 ? rank + 1 : 0;
+    const cls = (rankNumber && DISPLAY_SETTINGS.showProbable) ? ` likely-${rankNumber}` : '';
+    const usage = rank >= 0 ? ` - normalized Smogon probability score: ${hints[rank].usage.toFixed(1)}` : '';
+    const rankLabel = rank >= 0 ? ` - rank ${rankNumber}` : '';
+    return `<span class="speed-choice${cls}" title="${v.label}${rankLabel}${usage}">${v.value}</span>`;
+  }).join(' / ');
+}
+
+function makePlaceholder(img) {
+  const p = document.createElement('div');
+  p.className = 'placeholder';
+  p.textContent = img.dataset.placeholder || '?';
+  img.replaceWith(p);
+}
+
+function attachFallback(img) {
+  img.onerror = function() {
+    const fallbacks = (this.dataset.fallbacks || '').split('|').filter(Boolean);
+    if (fallbacks.length) {
+      this.src = fallbacks.shift();
+      this.dataset.fallbacks = fallbacks.join('|');
+    } else {
+      makePlaceholder(this);
+    }
+  };
+}
+
+function tileNode(p) {
+  const tile = document.createElement('div');
+  tile.className = `tile ${p.color || colourForSpeed(p.speed)}`;
+
+  const spriteWrap = document.createElement('div');
+  spriteWrap.className = 'sprite-wrap';
+  const img = document.createElement('img');
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.src = p.src;
+  img.alt = p.alt || p.name;
+  img.dataset.fallbacks = p.fallbacks || '';
+  img.dataset.placeholder = p.placeholder || initialPlaceholder(p.name);
+  attachFallback(img);
+  spriteWrap.appendChild(img);
+
+  const name = document.createElement('div');
+  name.className = 'poke-name';
+  name.textContent = p.name;
+
+  const bottom = document.createElement('div');
+  bottom.className = 'bottom-row';
+  const speed = document.createElement('span');
+  speed.className = 'speed';
+  speed.innerHTML = renderSpeedSpread(p);
+  bottom.appendChild(speed);
+  tile.append(spriteWrap, name, bottom);
+  return tile;
+}
+
+function rowNode(row) {
+  const div = document.createElement('div');
+  div.className = 'tile-row';
+  row.forEach(p => div.appendChild(tileNode(p)));
+  return div;
+}
+
+function headerNode(section) {
+  const div = document.createElement('div');
+  const mega = section.toUpperCase().includes('MEGA');
+  div.className = `section-header ${mega ? 'mega-header' : 'letter-header'}`;
+  const span = document.createElement('span');
+  span.textContent = section;
+  div.appendChild(span);
+  return div;
+}
+
+function sheetNode(pageNo, includeLegend) {
+  const sheet = document.createElement('section');
+  sheet.className = 'sheet';
+  sheet.innerHTML = `<header class="page-head"><div class="title"><h1>Pokémon Speed Chart</h1><p class="subtitle">Alphabetical • All Pokémon • Lv. 50 • Mega Pokémon at the end • Page ${pageNo}</p></div><div class="badge">A–Z</div></header>`;
+  const content = document.createElement('main');
+  content.className = 'content';
+  sheet.appendChild(content);
+  return sheet;
+}
+
+function groupData(pokemon) {
+  const groups = [];
+  let current = null;
+  for (const p of pokemon) {
+    if (!current || current.section !== p.section) {
+      current = { section: p.section, rows: [] };
+      groups.push(current);
+    }
+    let row = current.rows[current.rows.length - 1];
+    if (!row || row.length >= PER_ROW) {
+      row = [];
+      current.rows.push(row);
+    }
+    row.push(p);
+  }
+  return groups;
+}
+
+function overflows(content) {
+  return content.scrollHeight > content.clientHeight + 1;
+}
+
+function mmToPx(mm) {
+  const probe = document.createElement('div');
+  probe.style.position = 'absolute';
+  probe.style.visibility = 'hidden';
+  probe.style.height = mm + 'mm';
+  document.body.appendChild(probe);
+  const px = probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+function setPageRowHeight(content) {
+  const rows = [...content.querySelectorAll('.tile-row')];
+  if (!rows.length) return;
+
+  // Stable height avoids subtle tile shrinking/stretching when filters change
+  // the number of rows on a page.
+  const stableRow = mmToPx(23.5);
+  content.style.setProperty('--row-h', stableRow + 'px');
+}
+
+
+function renumberPages(container) {
+  const sheets = [...container.querySelectorAll('.sheet')];
+  const total = sheets.length;
+
+  function sortLabel() {
+    if (DISPLAY_SETTINGS.orderByProbableSpeed) return 'Likely speed';
+    if (DISPLAY_SETTINGS.orderBySpeed) return 'Base speed';
+    return 'Alphabetical';
+  }
+
+  function toggleLabel() {
+    const toggles = [];
+
+    toggles.push(DISPLAY_SETTINGS.fullyEvolvedOnly ? 'Fully evolved only' : 'All Pokémon');
+
+    if (DISPLAY_SETTINGS.loadedOnly) toggles.push('Competitive only');
+    if (DISPLAY_SETTINGS.separateMegas && !DISPLAY_SETTINGS.orderBySpeed && !DISPLAY_SETTINGS.orderByProbableSpeed) {
+      toggles.push('Megas separated');
+    }
+
+    return toggles.join(' • ');
+  }
+
+  function statsLabel() {
+    if (DISPLAY_SETTINGS.onlyLikelySpeed) return 'Likely speed where available';
+    return 'Base / +Nature / EV / Max';
+  }
+
+  sheets.forEach((sheet, i) => {
+    const sub = sheet.querySelector('.subtitle');
+    if (sub) {
+      sub.textContent = `${sortLabel()} • ${toggleLabel()} • ${statsLabel()} • Page ${i + 1} of ${total}`;
+    }
+  });
+}
+
+function pokemonHasCompetitiveData(p) {
+  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
+  return Boolean(COMPETITIVE_SPEED_HINTS[hintKey] && COMPETITIVE_SPEED_HINTS[hintKey].length);
+}
+
+function getVisiblePokemon(pokemon) {
+  let visible = pokemon;
+
+  if (DISPLAY_SETTINGS.loadedOnly) {
+    visible = visible.filter(pokemonHasCompetitiveData);
+  }
+
+  if (DISPLAY_SETTINGS.fullyEvolvedOnly) {
+    visible = visible.filter(p => p.isFullyEvolved);
+  }
+
+  if (!DISPLAY_SETTINGS.orderBySpeed && !DISPLAY_SETTINGS.orderByProbableSpeed) {
+    visible = [...visible].sort((a, b) => {
+      if (DISPLAY_SETTINGS.separateMegas) {
+        const aMega = a.isMega ? 1 : 0;
+        const bMega = b.isMega ? 1 : 0;
+        if (aMega !== bMega) return aMega - bMega;
+      }
+
+      const aName = a.isMega ? (a.megaSortName || a.name) : a.name;
+      const bName = b.isMega ? (b.megaSortName || b.name) : b.name;
+      return aName.localeCompare(bName) || a.name.localeCompare(b.name);
+    }).map(p => ({
+      ...p,
+      section: DISPLAY_SETTINGS.separateMegas && p.isMega
+        ? 'MEGA POKÉMON'
+        : (p.isMega ? (p.megaSortName || p.name).charAt(0).toUpperCase() : (p.alphaSection || p.name[0].toUpperCase()))
+    }));
+  }
+
+  return visible;
+}
+
+
+function refreshChart() {
+  if (POKEMON_CACHE.length) paginate(getVisiblePokemon(POKEMON_CACHE));
+}
+
+function paginate(pokemon) {
+  const container = document.getElementById('pages');
+  container.innerHTML = '';
+  let pageNo = 1;
+  let sheet = sheetNode(pageNo, true);
+  container.appendChild(sheet);
+  let content = sheet.querySelector('.content');
+
+  if (!pokemon.length) {
+    const empty = document.createElement('div');
+    empty.className = 'section-header letter-header';
+    const span = document.createElement('span');
+    span.textContent = DISPLAY_SETTINGS.loadedOnly
+      ? 'No loaded Smogon stats yet'
+      : DISPLAY_SETTINGS.fullyEvolvedOnly
+        ? 'No fully evolved Pokémon'
+        : 'No Pokémon';
+    empty.appendChild(span);
+    content.appendChild(empty);
+    renumberPages(container);
+    wrapSheetsForScreen(container);
+    return;
+  }
+
+  function newPage() {
+    setPageRowHeight(content);
+    pageNo += 1;
+    sheet = sheetNode(pageNo, false);
+    container.appendChild(sheet);
+    content = sheet.querySelector('.content');
+  }
+
+  if (DISPLAY_SETTINGS.orderBySpeed || DISPLAY_SETTINGS.orderByProbableSpeed) {
+    const speedSortFn = (a, b) => {
+      const aSpeed = DISPLAY_SETTINGS.orderByProbableSpeed ? getLikelySpeedValue(a) : a.speed;
+      const bSpeed = DISPLAY_SETTINGS.orderByProbableSpeed ? getLikelySpeedValue(b) : b.speed;
+      return bSpeed - aSpeed || b.speed - a.speed || a.name.localeCompare(b.name);
+    };
+
+    function appendSpeedSortedRows(list, sectionLabel = null) {
+      if (!list.length) return;
+
+      if (sectionLabel) {
+        const header = headerNode(sectionLabel);
+        const firstRow = rowNode(list.slice(0, PER_ROW));
+
+        content.append(header, firstRow);
+        setPageRowHeight(content);
+
+        if (overflows(content)) {
+          header.remove();
+          firstRow.remove();
+          newPage();
+          content.append(header, firstRow);
+          setPageRowHeight(content);
+        }
+
+        let remainingRow = [];
+
+        for (const p of list.slice(PER_ROW)) {
+          remainingRow.push(p);
+
+          if (remainingRow.length >= PER_ROW) {
+            const row = rowNode(remainingRow);
+            content.appendChild(row);
+            setPageRowHeight(content);
+
+            if (overflows(content)) {
+              row.remove();
+              newPage();
+              content.appendChild(row);
+              setPageRowHeight(content);
+            }
+
+            remainingRow = [];
+          }
+        }
+
+        if (remainingRow.length) {
+          const row = rowNode(remainingRow);
+          content.appendChild(row);
+          setPageRowHeight(content);
+
+          if (overflows(content)) {
+            row.remove();
+            newPage();
+            content.appendChild(row);
+            setPageRowHeight(content);
+          }
+        }
+
+        return;
+      }
+
+      let pendingRow = [];
+
+      for (const p of list) {
+        pendingRow.push(p);
+
+        if (pendingRow.length >= PER_ROW) {
+          const row = rowNode(pendingRow);
+          content.appendChild(row);
+          setPageRowHeight(content);
+
+          if (overflows(content)) {
+            row.remove();
+            newPage();
+            content.appendChild(row);
+            setPageRowHeight(content);
+          }
+
+          pendingRow = [];
+        }
+      }
+
+      if (pendingRow.length) {
+        const row = rowNode(pendingRow);
+        content.appendChild(row);
+        setPageRowHeight(content);
+
+        if (overflows(content)) {
+          row.remove();
+          newPage();
+          content.appendChild(row);
+          setPageRowHeight(content);
+        }
+      }
+    }
+
+    if (DISPLAY_SETTINGS.separateMegas) {
+      const normalSorted = pokemon.filter(p => !p.isMega).sort(speedSortFn);
+      const megaSorted = pokemon.filter(p => p.isMega).sort(speedSortFn);
+
+      appendSpeedSortedRows(normalSorted);
+      appendSpeedSortedRows(megaSorted, 'MEGA POKÉMON');
+    } else {
+      appendSpeedSortedRows([...pokemon].sort(speedSortFn));
+    }
+
+    setPageRowHeight(content);
+    renumberPages(container);
+    wrapSheetsForScreen(container);
+    return;
+  }
+
+  for (const group of groupData(pokemon)) {
+    const header = headerNode(group.section);
+    const firstRow = rowNode(group.rows[0]);
+
+    content.append(header, firstRow);
+    setPageRowHeight(content);
+    if (overflows(content)) {
+      header.remove();
+      firstRow.remove();
+      newPage();
+      content.append(header, firstRow);
+      setPageRowHeight(content);
+    }
+
+    for (let i = 1; i < group.rows.length; i++) {
+      const row = rowNode(group.rows[i]);
+      content.appendChild(row);
+      setPageRowHeight(content);
+      if (overflows(content)) {
+        row.remove();
+        newPage();
+        content.appendChild(row);
+        setPageRowHeight(content);
+      }
+    }
+  }
+
+  setPageRowHeight(content);
+  renumberPages(container);
+  wrapSheetsForScreen(container);
+}
+
+
+function unwrapSheetFrames(container) {
+  [...container.querySelectorAll(':scope > .sheet-frame')].forEach(frame => {
+    const sheet = frame.querySelector(':scope > .sheet');
+    if (sheet) frame.replaceWith(sheet);
+  });
+}
+
+function wrapSheetsForScreen(container) {
+  unwrapSheetFrames(container);
+
+  [...container.querySelectorAll(':scope > .sheet')].forEach(sheet => {
+    const frame = document.createElement('div');
+    frame.className = 'sheet-frame';
+    sheet.parentNode.insertBefore(frame, sheet);
+    frame.appendChild(sheet);
+  });
+
+  updateSheetScale();
+}
+
+let LAST_SCALE_WIDTH = 0;
+
+function currentViewportWidth() {
+  const widths = [
+    window.innerWidth,
+    document.documentElement ? document.documentElement.clientWidth : 0,
+    window.visualViewport ? window.visualViewport.width : 0
+  ].filter(Boolean);
+
+  return Math.min(...widths);
+}
+
+function updateSheetScale() {
+  const container = document.getElementById('pages');
+  if (!container) return;
+
+  const sheetWidth = mmToPx(198);
+  const sheetHeight = mmToPx(285);
+  const viewportWidth = currentViewportWidth();
+  const available = Math.max(1, viewportWidth - 24);
+  const scale = Math.min(1, available / sheetWidth);
+
+  LAST_SCALE_WIDTH = viewportWidth;
+  document.documentElement.style.setProperty('--sheet-scale', String(scale));
+  document.documentElement.style.setProperty('--screen-sheet-w', `${sheetWidth * scale}px`);
+  document.documentElement.style.setProperty('--screen-sheet-h', `${sheetHeight * scale}px`);
+}
+
+function updateSheetScaleSoon() {
+  updateSheetScale();
+  requestAnimationFrame(updateSheetScale);
+  setTimeout(updateSheetScale, 50);
+  setTimeout(updateSheetScale, 250);
+}
+
+function watchViewportForDevToolsToggle() {
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateSheetScaleSoon, { passive: true });
+    window.visualViewport.addEventListener('scroll', updateSheetScaleSoon, { passive: true });
+  }
+
+  window.addEventListener('resize', updateSheetScaleSoon, { passive: true });
+  window.addEventListener('orientationchange', updateSheetScaleSoon);
+
+  setInterval(() => {
+    const w = currentViewportWidth();
+    if (Math.abs(w - LAST_SCALE_WIDTH) > 1) updateSheetScaleSoon();
+  }, 250);
+}
+
+let POKEMON_CACHE = [];
+async function boot() {
+  const container = document.getElementById('pages');
+  container.innerHTML = '<section class="sheet"><header class="page-head"><div class="title"><h1>Pokémon Speed Chart</h1><p class="subtitle">Loading data from PokeAPI CSV...</p></div><div class="badge">A–Z</div></header><main class="content"><div class="section-header letter-header"><span>Loading</span></div></main></section>';
+  try {
+    POKEMON_CACHE = await buildPokemonData();
+    paginate(POKEMON_CACHE);
+    await loadLatestCompetitiveFileIfAvailable();
+  } catch (err) {
+    container.innerHTML = `<section class="sheet"><header class="page-head"><div class="title"><h1>Pokémon Speed Chart</h1><p class="subtitle">Data failed to load</p></div><div class="badge">ERR</div></header><main class="content"><div style="background:white;border:1mm solid #d8261d;border-radius:3mm;padding:6mm;font-weight:800;line-height:1.4;">Could not fetch the PokeAPI CSV files. Open this file with internet access, then print after the pages finish loading.<br><br>${String(err).replace(/[<>]/g, '')}</div></main></section>`;
+  }
+}
+
+
+function printChart() {
+  refreshChart();
+  setTimeout(() => window.print(), 50);
+}
+
+function setupControlPanel() {
+  const probable = document.getElementById('toggleProbable');
+  if (probable) {
+    probable.checked = DISPLAY_SETTINGS.showProbable;
+    probable.addEventListener('change', () => {
+      DISPLAY_SETTINGS.showProbable = probable.checked;
+      document.body.classList.toggle('hide-probable', !probable.checked);
+      refreshChart();
+    });
+  }
+
+  const onlyLikelySpeed = document.getElementById('toggleOnlyLikelySpeed');
+  if (onlyLikelySpeed) {
+    onlyLikelySpeed.checked = DISPLAY_SETTINGS.onlyLikelySpeed;
+    onlyLikelySpeed.addEventListener('change', () => {
+      DISPLAY_SETTINGS.onlyLikelySpeed = onlyLikelySpeed.checked;
+
+      const speedSort = document.getElementById('toggleSpeedSort');
+      const probableSort = document.getElementById('toggleProbableSpeedSort');
+
+      if (onlyLikelySpeed.checked) {
+        // Only force likely sorting if regular speed sorting was active.
+        if (DISPLAY_SETTINGS.orderBySpeed) {
+          DISPLAY_SETTINGS.orderBySpeed = false;
+          DISPLAY_SETTINGS.orderByProbableSpeed = true;
+          if (probableSort) probableSort.checked = true;
+        }
+
+        if (speedSort) {
+          speedSort.checked = false;
+          speedSort.disabled = true;
+          speedSort.closest('label')?.classList.add('toggle-disabled');
+        }
+      } else {
+        if (speedSort) {
+          speedSort.disabled = false;
+          speedSort.closest('label')?.classList.remove('toggle-disabled');
+        }
+      }
+
+      refreshChart();
+    });
+  }
+
+  const loadedOnly = document.getElementById('toggleLoadedOnly');
+  if (loadedOnly) {
+    loadedOnly.checked = DISPLAY_SETTINGS.loadedOnly;
+    loadedOnly.addEventListener('change', () => {
+      DISPLAY_SETTINGS.loadedOnly = loadedOnly.checked;
+      refreshChart();
+    });
+  }
+
+  const fullyEvolvedOnly = document.getElementById('toggleFullyEvolvedOnly');
+  if (fullyEvolvedOnly) {
+    fullyEvolvedOnly.checked = DISPLAY_SETTINGS.fullyEvolvedOnly;
+    fullyEvolvedOnly.addEventListener('change', () => {
+      DISPLAY_SETTINGS.fullyEvolvedOnly = fullyEvolvedOnly.checked;
+      refreshChart();
+    });
+  }
+
+  const separateMegas = document.getElementById('toggleSeparateMegas');
+  if (separateMegas) {
+    separateMegas.checked = DISPLAY_SETTINGS.separateMegas;
+    separateMegas.addEventListener('change', () => {
+      DISPLAY_SETTINGS.separateMegas = separateMegas.checked;
+      refreshChart();
+    });
+  }
+
+  const speedSort = document.getElementById('toggleSpeedSort');
+  if (speedSort) {
+    speedSort.checked = DISPLAY_SETTINGS.orderBySpeed;
+    speedSort.disabled = DISPLAY_SETTINGS.onlyLikelySpeed;
+    if (DISPLAY_SETTINGS.onlyLikelySpeed) speedSort.closest('label')?.classList.add('toggle-disabled');
+
+    speedSort.addEventListener('change', () => {
+      if (DISPLAY_SETTINGS.onlyLikelySpeed) {
+        speedSort.checked = false;
+        DISPLAY_SETTINGS.orderBySpeed = false;
+        return;
+      }
+
+      DISPLAY_SETTINGS.orderBySpeed = speedSort.checked;
+      if (speedSort.checked) {
+        DISPLAY_SETTINGS.orderByProbableSpeed = false;
+        const probableSort = document.getElementById('toggleProbableSpeedSort');
+        if (probableSort) probableSort.checked = false;
+      }
+      refreshChart();
+    });
+  }
+
+  const probableSort = document.getElementById('toggleProbableSpeedSort');
+  if (probableSort) {
+    probableSort.checked = DISPLAY_SETTINGS.orderByProbableSpeed;
+    probableSort.addEventListener('change', () => {
+      DISPLAY_SETTINGS.orderByProbableSpeed = probableSort.checked;
+      if (probableSort.checked) {
+        DISPLAY_SETTINGS.orderBySpeed = false;
+        const speedSort = document.getElementById('toggleSpeedSort');
+        if (speedSort) speedSort.checked = false;
+      }
+      refreshChart();
+    });
+  }
+}
+
+
+function setupScrollTopButton() {
+  const button = document.getElementById('scrollTopButton');
+  if (!button) return;
+
+  function updateVisibility() {
+    button.classList.toggle('visible', window.scrollY > 240);
+  }
+
+  button.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', updateVisibility, { passive: true });
+  window.addEventListener('resize', updateVisibility);
+  window.addEventListener('orientationchange', updateVisibility);
+  updateVisibility();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateSmogonDownloadLinks();
+  setupControlPanel();
+  setupScrollTopButton();
+  watchViewportForDevToolsToggle();
+  updateSheetScaleSoon();
+
+  const printButton = document.getElementById('printButton');
+  if (printButton) printButton.addEventListener('click', printChart);
+  boot();
+
+  const smogonFile = document.getElementById('smogonFile');
+  if (smogonFile) smogonFile.addEventListener('change', event => {
+    const files = event.target.files;
+    if (files && files.length) loadMultipleCompetitiveFiles(files);
+  });
+});
+window.addEventListener('beforeprint', () => { refreshChart(); });
+</script>
+
+</body>
+</html>
