@@ -29,6 +29,7 @@ Visual speed tier reference for VGC.
 Printable type effectiveness reference.
 - Shows offensive and defensive matchups for all 18 types
 - Fits cleanly on a single A4 page
+- Download the pdf directly [here](https://dhak0s.github.io/pokemon-tools/type-chart/Pokémon-type-matchup-chart.pdf)
 
 ![Type Chart](images/type-chart.png)
 
