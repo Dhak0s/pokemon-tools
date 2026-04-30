@@ -43,6 +43,27 @@
     flex-direction: column;
     align-items: stretch;
   }
+  .header-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(11px, 2.7vw, 18px);
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.15;
+    text-align: center;
+    text-transform: none;
+    pointer-events: none;
+    opacity: 1;
+  }
+  .header-placeholder-mobile-break {
+    display: none;
+  }
   /* Input invisible by default — name shows through */
   .header-search-input {
     width: 100%;
@@ -84,7 +105,11 @@
   }
   /* Show placeholder only when no pokemon is loaded yet */
   .header-title-wrapper:not(.loaded):not(.editing) .header-search-input::placeholder {
-    color: rgba(255,255,255,0.45);
+    color: transparent;
+  }
+  .header-title-wrapper.loaded .header-placeholder,
+  .header-title-wrapper.editing .header-placeholder {
+    opacity: 0;
   }
   .header-dropdown {
     position: absolute;
@@ -808,6 +833,22 @@
       min-height: 38px;
     }
 
+    .header-search-input::placeholder {
+      font-size: clamp(9px, 2.8vw, 13px);
+      letter-spacing: 0.2px;
+    }
+
+    .header-placeholder {
+      flex-direction: column;
+      padding: 0 4px;
+      font-size: clamp(9px, 2.8vw, 13px);
+      letter-spacing: 0.2px;
+    }
+
+    .header-placeholder-mobile-break {
+      display: none;
+    }
+
     .header-title-wrapper { min-height: 38px; }
 
     .pokeball { width: 24px; height: 24px; }
@@ -875,6 +916,8 @@
   @media (max-width: 360px) {
     .header-title { font-size: 18px; }
     .header-search-input { font-size: 16px; }
+    .header-search-input::placeholder { font-size: 9px; }
+    .header-placeholder { font-size: 9px; }
     .move-matchups { grid-template-columns: 1fr; }
     .matchup-icons img { height: 14px; }
     .def-matchup-types img { height: 16px; }
@@ -936,11 +979,12 @@
     <div class="header-title-wrapper">
       <div class="header-title" id="pokemonName"></div>
       <div class="header-search-overlay">
+        <div class="header-placeholder">Enter Pokémon name or<span class="header-placeholder-mobile-break"><br></span> paste Pokémon Showdown export...</div>
         <input
           type="text"
           class="header-search-input"
           id="pokemonSearch"
-          placeholder="Enter Pokémon name..."
+          placeholder="Enter Pokémon name or paste Pokémon Showdown export..."
           tabindex="1"
           autocomplete="off"
           oninput="filterPokemonDropdown(this.value)"
