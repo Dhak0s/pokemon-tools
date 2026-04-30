@@ -782,11 +782,21 @@ const SMOGON_REG_FALLBACKS_BY_YEAR = {
   2025: ['h', 'g', 'f']
 };
 
-function latestCompletedStatsMonth(date = new Date()) {
-  const d = new Date(date.getFullYear(), date.getMonth(), 0);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
+function latestCompletedStatsDate(date = new Date()) {
+  const dayOfMonth = date.getDate();
+  return dayOfMonth >= 2
+    ? new Date(date.getFullYear(), date.getMonth(), 0)
+    : new Date(date.getFullYear(), date.getMonth() - 1, 0);
+}
+
+function formatSmogonStatsMonth(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   return `${year}-${month}`;
+}
+
+function latestCompletedStatsMonth(date = new Date()) {
+  return formatSmogonStatsMonth(latestCompletedStatsDate(date));
 }
 
 function smogonMovesetDirectory(month = latestCompletedStatsMonth()) {
@@ -806,8 +816,9 @@ function smogonRegCandidates(year = new Date().getFullYear(), month = latestComp
 }
 
 function buildSmogonCandidateUrls(ratings = SMOGON_RATINGS) {
-  const year = new Date().getFullYear();
-  const month = latestCompletedStatsMonth();
+  const statsDate = latestCompletedStatsDate();
+  const year = statsDate.getFullYear();
+  const month = formatSmogonStatsMonth(statsDate);
   const directory = smogonMovesetDirectory(month);
   const urls = [];
 
