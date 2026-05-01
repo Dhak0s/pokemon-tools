@@ -497,7 +497,7 @@
     <input id="smogonFile" type="file" accept=".txt,text/plain" multiple>
     <a id="smogonDirectoryLink" href="https://www.smogon.com/stats/2026-03/moveset/" target="_blank" rel="noopener">Smogon data site</a>
     <button id="printButton">Print</button>
-    <span class="controls-info">The Smogon data site button will load the current month's moveset directory. This button is delayed by 2 days to allow Smogon time to upload the new stats.</span> 
+    <span class="controls-info">The Smogon data site button checks for the newest moveset directory and falls back to the previous month if the newest stats are not available yet.</span> 
     <span id="competitiveStatus">No competitive data loaded</span>
   </div>
   <div class="toggle-list" aria-label="Highlight controls">
@@ -784,7 +784,7 @@ const SMOGON_REG_FALLBACKS_BY_YEAR = {
 
 function latestCompletedStatsDate(date = new Date()) {
   const dayOfMonth = date.getDate();
-  return dayOfMonth >= 2
+  return dayOfMonth >= 4
     ? new Date(date.getFullYear(), date.getMonth(), 0)
     : new Date(date.getFullYear(), date.getMonth() - 1, 0);
 }
@@ -797,6 +797,23 @@ function formatSmogonStatsMonth(date) {
 
 function latestCompletedStatsMonth(date = new Date()) {
   return formatSmogonStatsMonth(latestCompletedStatsDate(date));
+}
+
+function latestPotentialStatsDate(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), 0);
+}
+
+function previousStatsDate(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 0);
+}
+
+function smogonDirectoryCandidateMonths(date = new Date()) {
+  const latestPotential = latestPotentialStatsDate(date);
+  const fallback = previousStatsDate(latestPotential);
+  return [...new Set([
+    formatSmogonStatsMonth(latestPotential),
+    formatSmogonStatsMonth(fallback)
+  ])];
 }
 
 function smogonMovesetDirectory(month = latestCompletedStatsMonth()) {
@@ -872,8 +889,51 @@ function updateSmogonDownloadLinks() {
 
   if (directory) {
     directory.href = smogonMovesetDirectory(month);
-    directory.title = 'Smogon moveset directory for the latest completed month';
+    directory.title = 'Checking for the newest available Smogon moveset directory...';
+    updateSmogonDirectoryLinkWhenReachable(directory);
   }
+}
+
+function smogonDirectoryCheckUrls(url) {
+  return [
+    url,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`
+  ];
+}
+
+async function smogonDirectoryIsReachable(month) {
+  const url = smogonMovesetDirectory(month);
+
+  for (const checkUrl of smogonDirectoryCheckUrls(url)) {
+    try {
+      const res = await fetch(checkUrl, { cache: 'no-store' });
+      if (!res.ok) continue;
+
+      const text = await res.text();
+      if (text.includes('.txt') || text.includes('Index of') || text.includes('/stats/')) {
+        return true;
+      }
+    } catch (err) {
+      // Direct Smogon checks can be blocked by CORS; proxy fallbacks are tried next.
+    }
+  }
+
+  return false;
+}
+
+async function updateSmogonDirectoryLinkWhenReachable(directory) {
+  for (const month of smogonDirectoryCandidateMonths()) {
+    if (await smogonDirectoryIsReachable(month)) {
+      directory.href = smogonMovesetDirectory(month);
+      directory.title = `Smogon moveset directory for ${month}`;
+      return;
+    }
+  }
+
+  const fallbackMonth = latestCompletedStatsMonth();
+  directory.href = smogonMovesetDirectory(fallbackMonth);
+  directory.title = `Smogon moveset directory for ${fallbackMonth}`;
 }
 
 const SMOGON_COMPETITIVE_URLS = buildSmogonCandidateUrls();
