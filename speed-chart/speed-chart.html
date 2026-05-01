@@ -672,9 +672,17 @@ function displayName(identifier, speciesIdentifier) {
   return `${species} ${titleCase(suffix)}`;
 }
 
+function alphaName(identifier, speciesIdentifier, name) {
+  const id = identifier.toLowerCase();
+  const species = titleCase(speciesIdentifier);
+  const hasFormSuffix = id.startsWith(speciesIdentifier + '-');
+
+  if (!hasFormSuffix) return name;
+  return name === species ? species : `${species} ${name}`;
+}
+
 function slugName(identifier) {
   return identifier
-    .replace('-mega-x', '-mega').replace('-mega-y', '-mega')
     .replace('-alola', '-alolan').replace('-galar', '-galarian').replace('-hisui', '-hisuian')
     .replace('-paldea', '-paldean');
 }
@@ -693,24 +701,12 @@ function pokemonSpriteSources(p, speciesIdentifier) {
   const dbSlug = slugName(p.identifier);
   const dbSpeciesSlug = speciesIdentifier;
 
-  // PokeAPI HOME sprites are incomplete for many high-ID alternate forms.
-  // Starting those at the form HOME URL creates a wall of avoidable 404s.
-  // Use species artwork first for high-ID forms, then fall back if needed.
-  if (idNum >= 10000) {
-    return uniqueList([
-      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${speciesNum}.png`,
-      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesNum}.png`,
-      `https://img.pokemondb.net/sprites/home/normal/${dbSlug}.png`,
-      `https://img.pokemondb.net/sprites/home/normal/${dbSpeciesSlug}.png`
-    ]);
-  }
-
   return uniqueList([
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${idNum}.png`,
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idNum}.png`,
+    `https://img.pokemondb.net/sprites/home/normal/${dbSlug}.png`,
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${speciesNum}.png`,
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesNum}.png`,
-    `https://img.pokemondb.net/sprites/home/normal/${dbSlug}.png`,
     `https://img.pokemondb.net/sprites/home/normal/${dbSpeciesSlug}.png`
   ]);
 }
@@ -740,8 +736,9 @@ async function buildPokemonData() {
   return rows.map(p => {
     const species = speciesById.get(p.speciesNum);
     const name = displayName(p.identifier, species.identifier);
+    const alphaSortName = alphaName(p.identifier, species.identifier, name);
     const isMega = p.identifier.includes('-mega');
-    const section = isMega ? 'MEGA POKÉMON' : name[0].toUpperCase();
+    const section = isMega ? 'MEGA POKÉMON' : alphaSortName[0].toUpperCase();
     const spriteSources = pokemonSpriteSources(p, species.identifier);
     const src = spriteSources[0] || '';
     const fallbacks = spriteSources.slice(1).join('|');
@@ -751,7 +748,8 @@ async function buildPokemonData() {
       competitiveName: p.identifier,
       isMega,
       megaSortName: isMega ? name.replace(/\bMega\b/gi, '').trim() : name,
-      alphaSection: name[0].toUpperCase(),
+      alphaSortName,
+      alphaSection: alphaSortName[0].toUpperCase(),
       isFullyEvolved: p.isFullyEvolved,
       speed: p.speed,
       color: colourForSpeed(p.speed),
@@ -760,7 +758,7 @@ async function buildPokemonData() {
       placeholder: initialPlaceholder(name),
       alt: name,
       sortKey: (() => {
-        const base = name.toUpperCase();
+        const base = alphaSortName.toUpperCase();
         const normalized = isMega
           ? 'MEGA ' + base.replace(/\bMEGA\b/g, '').trim()
           : base;
@@ -1545,8 +1543,8 @@ function getVisiblePokemon(pokemon) {
         if (aMega !== bMega) return aMega - bMega;
       }
 
-      const aName = a.isMega ? (a.megaSortName || a.name) : a.name;
-      const bName = b.isMega ? (b.megaSortName || b.name) : b.name;
+      const aName = a.isMega ? (a.megaSortName || a.name) : (a.alphaSortName || a.name);
+      const bName = b.isMega ? (b.megaSortName || b.name) : (b.alphaSortName || b.name);
       return aName.localeCompare(bName) || a.name.localeCompare(b.name);
     }).map(p => ({
       ...p,
