@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Pokémon Speed Chart</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffffff' stroke='%23073b86' stroke-width='4'/%3E%3Cpath d='M4 32h56' stroke='%23073b86' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23eaf7ff' stroke='%23073b86' stroke-width='4'/%3E%3C/svg%3E">
 <style>
@@ -502,10 +504,11 @@
   </div>
   <div class="toggle-list" aria-label="Highlight controls">
     <label class="toggle-item"><input id="toggleProbable" type="checkbox" checked> Show probable speed</label>
-    <label class="toggle-item"><input id="toggleLoadedOnly" type="checkbox"> Only show competitive Pokémon</label>
+    <label class="toggle-item"><input id="toggleLoadedOnly" type="checkbox"> Only show Pokémon in loaded files</label>
+    <label class="toggle-item"><input id="toggleRegulationMAOnly" type="checkbox"> Only show Regulation M-A Pokémon</label>
     <label class="toggle-item"><input id="toggleOnlyLikelySpeed" type="checkbox"> Only show likely speed</label>
     <label class="toggle-item"><input id="toggleFullyEvolvedOnly" type="checkbox"> Only show fully evolved Pokémon</label>
-    <label class="toggle-item"><input id="toggleSeparateMegas" type="checkbox" checked> Separate Megas</label>
+    <label class="toggle-item"><input id="toggleSeparateMegas" type="checkbox"> Separate Megas</label>
     <label class="toggle-item"><input id="toggleSpeedSort" type="checkbox"> Order by speed</label>
     <label class="toggle-item"><input id="toggleProbableSpeedSort" type="checkbox"> Order by likely speed</label>
   </div>
@@ -522,12 +525,12 @@
     Click the Smogon data site button to navigate to the Smogon moveset directory.<br>
     Look for the text files that follow your formats naming convention.<br><br>
     Examples:<br>
-    <b>gen9vgc2026regibo3-1630.txt</b><br>
-    <b>gen9vgc2026regma-1760.txt</b><br><br>
+    <b>gen9championsvgc2026regma-1760.txt</b><br>
+    <b>gen9championsvgc2026regmabo3-1630.txt</b><br><br>
     Right click on the file and choose "Save link as..." to download it to your device.<br><br>
     Note: It can be useful to dowload multiple files to get a more complete picture, as not all Pokémon are used in every format or rating tier. For example, if you're interested in the Pokémon Champions format, look for files with "regma" in the name, but also consider downloading files from other recent formats and ratings to see a broader range of competitive usage.<br><br>
     Don't know how to read the Smogon file names? Here's a quick guide:<br>
-    • <b>gen9</b> = Generation 9 Pokémon (Scarlet/Violet)<br>
+    • <b>gen9champions</b> = Generation 9 Pokémon (Scarlet/Violet) in Pokémon Champions<br>
     • <b>vgc</b> = Video Game Championships, the main competitive format for Pokémon on consoles<br>
     • <b>2026</b> = The year the stats were recorded<br>
     • <b>regma</b> = Regulation M-A, the current ruleset for Pokémon Champions format<br>
@@ -541,7 +544,8 @@
 
     <b>Toggles:</b><br>
     • <b>Show Probable Speed</b> Shows the colours for competitive usage<br>
-    • <b>Only show competitive Pokémon</b> Hides Pokémon that don't appear in the competitive data you loaded<br>
+    • <b>Only show Pokémon in loaded files</b> Hides Pokémon that don't appear in the Smogon text files you loaded or auto-loaded<br>
+    • <b>Only show Regulation M-A Pokémon</b> Hides Pokémon that aren't listed in the built-in Regulation M-A format list<br>
     • <b>Only show likely speed</b> Hides all but the most likely speed based on competitive data<br>
     • <b>Only show fully evolved Pokémon</b> Hides Pokémon that aren't fully evolved forms<br>
     • <b>Separate Megas</b> Keeps Mega forms in their own section; turn off to alphabetize them with everything else<br>
@@ -681,6 +685,18 @@ function alphaName(identifier, speciesIdentifier, name) {
   return name === species ? species : `${species} ${name}`;
 }
 
+function megaBaseSortName(name) {
+  return name.replace(/\bMega\b/gi, '').trim();
+}
+
+function alphabeticalSortName(p) {
+  return p.isMega ? (p.megaSortName || p.name) : (p.alphaSortName || p.name);
+}
+
+function alphabeticalSortRank(p) {
+  return p.isMega ? 1 : 0;
+}
+
 function slugName(identifier) {
   return identifier
     .replace('-alola', '-alolan').replace('-galar', '-galarian').replace('-hisui', '-hisuian')
@@ -746,8 +762,9 @@ async function buildPokemonData() {
       section,
       name,
       competitiveName: p.identifier,
+      speciesIdentifier: species.identifier,
       isMega,
-      megaSortName: isMega ? name.replace(/\bMega\b/gi, '').trim() : name,
+      megaSortName: isMega ? megaBaseSortName(name) : name,
       alphaSortName,
       alphaSection: alphaSortName[0].toUpperCase(),
       isFullyEvolved: p.isFullyEvolved,
@@ -758,12 +775,8 @@ async function buildPokemonData() {
       placeholder: initialPlaceholder(name),
       alt: name,
       sortKey: (() => {
-        const base = alphaSortName.toUpperCase();
-        const normalized = isMega
-          ? 'MEGA ' + base.replace(/\bMEGA\b/g, '').trim()
-          : base;
-
-        return `${isMega ? '2_' : '1_'}${normalized}`;
+        const base = isMega ? megaBaseSortName(name) : alphaSortName;
+        return `${base.toUpperCase()}_${isMega ? '1' : '0'}_${name.toUpperCase()}`;
       })()
     };
   }).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
@@ -940,12 +953,16 @@ let COMPETITIVE_SPEED_MERGED = {};
 const COMPETITIVE_LOADED_FILES = new Set();
 let AUTO_LOADED_LATEST_KEY = null;
 let AUTO_LOADED_LATEST_LABEL = null;
+let COMPETITIVE_STATUS_PREFIX = '';
+let COMPETITIVE_STATUS_SUFFIX = '';
+let COMPETITIVE_STATUS_TITLE_SOURCE = '';
 const DISPLAY_SETTINGS = {
   showProbable: true,
   onlyLikelySpeed: false,
   loadedOnly: false,
+  regulationMAOnly: false,
   fullyEvolvedOnly: false,
-  separateMegas: true,
+  separateMegas: false,
   orderBySpeed: false,
   orderByProbableSpeed: false
 };
@@ -955,6 +972,116 @@ function normaliseCompetitiveName(name) {
     .toLowerCase()
     .replace(/forme/g, '')
     .replace(/[^a-z0-9]/g, '');
+}
+
+const COMPETITIVE_NAME_ALIASES = Object.fromEntries(Object.entries({
+  'aegislash-shield': ['Aegislash'],
+  'aegislash-blade': ['Aegislash'],
+  'gourgeist-average': ['Gourgeist'],
+  'lycanroc-midday': ['Lycanroc'],
+  'maushold-family-of-three': ['Maushold'],
+  'maushold-family-of-four': ['Maushold-Four', 'Maushold'],
+  'meowstic-mega': ['Meowstic-M-Mega', 'Meowstic-F-Mega'],
+  'mimikyu-disguised': ['Mimikyu'],
+  'mimikyu-busted': ['Mimikyu'],
+  'morpeko-full-belly': ['Morpeko'],
+  'morpeko-hangry': ['Morpeko'],
+  'palafin-zero': ['Palafin'],
+  'polteageist': ['Polteageist-Antique'],
+  'sinistcha': ['Sinistcha-Masterpiece'],
+  'tauros-paldea-aqua-breed': ['Tauros-Paldea-Aqua'],
+  'tauros-paldea-blaze-breed': ['Tauros-Paldea-Blaze'],
+  'tauros-paldea-combat-breed': ['Tauros-Paldea-Combat'],
+  'vivillon': ['Vivillon-Fancy', 'Vivillon-Pokeball']
+}).map(([name, aliases]) => [
+  normaliseCompetitiveName(name),
+  aliases.map(normaliseCompetitiveName)
+]));
+
+function expandCompetitiveAliasKeys(keys) {
+  const expanded = [...keys];
+
+  for (const key of keys) {
+    const aliases = COMPETITIVE_NAME_ALIASES[key];
+    if (aliases) expanded.push(...aliases);
+  }
+
+  return uniqueList(expanded);
+}
+
+function expandRegulationMAKeys(names) {
+  const keys = new Set(names.map(normaliseCompetitiveName));
+
+  for (const [chartKey, aliases] of Object.entries(COMPETITIVE_NAME_ALIASES)) {
+    if (aliases.some(alias => keys.has(alias))) {
+      keys.add(chartKey);
+    }
+  }
+
+  return keys;
+}
+
+const REGULATION_MA_NAMES = ["Blastoise-Mega","Gengar-Mega","Lucario-Mega","Palafin","Palafin-Hero","Starmie-Mega","Aegislash","Araquanid","Archaludon","Ceruledge","Clefable","Corviknight","Delphox-Mega","Ditto","Dragapult","Excadrill","Floette-Mega","Garchomp","Glimmora","Hatterene","Hydreigon","Kingambit","Lopunny-Mega","Meganium-Mega","Meowscarada","Pelipper","Primarina","Quaquaval","Rotom-Wash","Samurott-Hisui","Scizor","Slowking-Galar","Sneasler","Toxapex","Volcarona","Clefable-Mega","Excadrill-Mega","Garchomp-Mega","Glimmora-Mega","Scizor-Mega","Abomasnow","Abomasnow-Mega","Absol","Absol-Mega","Aerodactyl","Aerodactyl-Mega","Aggron","Aggron-Mega","Alakazam","Alakazam-Mega","Alcremie","Altaria","Altaria-Mega","Ampharos","Ampharos-Mega","Appletun","Arbok","Arcanine","Arcanine-Hisui","Ariados","Armarouge","Aromatisse","Audino","Audino-Mega","Aurorus","Avalugg","Avalugg-Hisui","Azumarill","Banette","Banette-Mega","Basculegion","Basculegion-F","Bastiodon","Beartic","Beedrill","Beedrill-Mega","Bellibolt","Blastoise","Camerupt","Camerupt-Mega","Castform","Chandelure","Chandelure-Mega","Charizard","Charizard-Mega-X","Charizard-Mega-Y","Chesnaught","Chesnaught-Mega","Chimecho","Chimecho-Mega","Clawitzer","Cofagrigus","Conkeldurr","Crabominable","Crabominable-Mega","Decidueye","Decidueye-Hisui","Dedenne","Delphox","Diggersby","Drampa","Drampa-Mega","Emboar","Emboar-Mega","Emolga","Empoleon","Espathra","Espeon","Farigiraf","Feraligatr","Feraligatr-Mega","Flapple","Flareon","Floette-Eternal","Florges","Forretress","Froslass","Froslass-Mega","Furfrou","Gallade","Gallade-Mega","Garbodor","Gardevoir","Gardevoir-Mega","Garganacl","Gengar","Glaceon","Glalie","Glalie-Mega","Gliscor","Golurk","Golurk-Mega","Goodra","Goodra-Hisui","Gourgeist","Gourgeist-Large","Gourgeist-Small","Gourgeist-Super","Greninja","Greninja-Mega","Gyarados","Gyarados-Mega","Hawlucha","Hawlucha-Mega","Heliolisk","Heracross","Heracross-Mega","Hippowdon","Houndoom","Houndoom-Mega","Hydrapple","Incineroar","Infernape","Jolteon","Kangaskhan","Kangaskhan-Mega","Kleavor","Klefki","Kommo-o","Krookodile","Leafeon","Liepard","Lopunny","Lucario","Luxray","Lycanroc","Lycanroc-Dusk","Lycanroc-Midnight","Machamp","Mamoswine","Manectric","Manectric-Mega","Maushold","Maushold-Four","Medicham","Medicham-Mega","Meganium","Meowstic","Meowstic-F","Meowstic-F-Mega","Meowstic-M-Mega","Milotic","Mimikyu","Morpeko","Mr. Rime","Mudsdale","Ninetales","Ninetales-Alola","Noivern","Oranguru","Orthworm","Pangoro","Passimian","Pidgeot","Pidgeot-Mega","Pinsir","Pinsir-Mega","Politoed","Polteageist","Polteageist-Antique","Raichu","Raichu-Alola","Rampardos","Reuniclus","Rhyperior","Roserade","Rotom","Rotom-Fan","Rotom-Frost","Rotom-Heat","Rotom-Mow","Runerigus","Sableye","Sableye-Mega","Salazzle","Samurott","Sandaconda","Scovillain","Scovillain-Mega","Serperior","Sharpedo","Sharpedo-Mega","Simipour","Simisage","Simisear","Sinistcha","Sinistcha-Masterpiece","Skarmory","Skarmory-Mega","Skeledirge","Slowbro","Slowbro-Galar","Slowbro-Mega","Slowking","Slurpuff","Snorlax","Spiritomb","Starmie","Stunfisk","Stunfisk-Galar","Sylveon","Talonflame","Tauros","Tauros-Paldea-Aqua","Tauros-Paldea-Blaze","Tauros-Paldea-Combat","Tinkaton","Torkoal","Torterra","Toucannon","Toxicroak","Trevenant","Tsareena","Typhlosion","Typhlosion-Hisui","Tyranitar","Tyranitar-Mega","Tyrantrum","Umbreon","Vanilluxe","Vaporeon","Venusaur","Venusaur-Mega","Victreebel","Victreebel-Mega","Vivillon","Vivillon-Fancy","Vivillon-Pokeball","Watchog","Weavile","Whimsicott","Wyrdeer","Zoroark","Zoroark-Hisui","Pikachu"];
+const REGULATION_MA_KEYS = expandRegulationMAKeys(REGULATION_MA_NAMES);
+
+function competitiveHintKeys(p) {
+  const keys = [
+    normaliseCompetitiveName(p.competitiveName || p.name),
+    normaliseCompetitiveName(p.name)
+  ];
+
+  const identifier = String(p.competitiveName || '').toLowerCase();
+  const speciesIdentifier = String(p.speciesIdentifier || '').toLowerCase();
+  const formSuffix = speciesIdentifier && identifier.startsWith(speciesIdentifier + '-')
+    ? identifier.slice(speciesIdentifier.length + 1)
+    : '';
+
+  if (formSuffix === 'male' || formSuffix === 'female') {
+    const smogonGenderSuffix = formSuffix === 'male' ? 'm' : 'f';
+    keys.push(normaliseCompetitiveName(`${speciesIdentifier}-${smogonGenderSuffix}`));
+    keys.push(normaliseCompetitiveName(speciesIdentifier));
+  }
+
+  return expandCompetitiveAliasKeys(keys);
+}
+
+function competitiveHintsForPokemon(p) {
+  for (const key of competitiveHintKeys(p)) {
+    const hints = COMPETITIVE_SPEED_HINTS[key];
+    if (hints && hints.length) return hints;
+  }
+
+  return [];
+}
+
+function competitiveLoadedStatusText() {
+  const datasetCount = Object.keys(COMPETITIVE_SPEED_HINTS).length;
+  const displayableCount = POKEMON_CACHE.length
+    ? POKEMON_CACHE.filter(pokemonHasCompetitiveData).length
+    : 0;
+
+  if (!POKEMON_CACHE.length) return `${datasetCount} Pokémon loaded`;
+  if (DISPLAY_SETTINGS.loadedOnly) return `${getVisiblePokemon(POKEMON_CACHE).length} Pokémon shown`;
+
+  return `${displayableCount} Pokémon loaded`;
+}
+
+function competitiveLoadedStatusTitle(sourceLabel = '') {
+  const datasetCount = Object.keys(COMPETITIVE_SPEED_HINTS).length;
+  const displayableCount = POKEMON_CACHE.length
+    ? POKEMON_CACHE.filter(pokemonHasCompetitiveData).length
+    : datasetCount;
+  const prefix = sourceLabel ? `${sourceLabel}; ` : '';
+
+  return `${prefix}${displayableCount} chart entries matched from ${datasetCount} Pokémon in dataset`;
+}
+
+function updateCompetitiveStatusText() {
+  const status = document.getElementById('competitiveStatus');
+  if (!status || !COMPETITIVE_STATUS_PREFIX) return;
+
+  status.textContent = `${COMPETITIVE_STATUS_PREFIX}${competitiveLoadedStatusText()}${COMPETITIVE_STATUS_SUFFIX}`;
+  status.title = competitiveLoadedStatusTitle(COMPETITIVE_STATUS_TITLE_SOURCE);
 }
 
 function parseSmogonMoveset(text) {
@@ -1149,7 +1276,10 @@ function applyCompetitiveText(text, sourceLabel) {
 
   if (status) {
     status.classList.remove('auto-loaded');
-    status.textContent = `Loaded files: ${COMPETITIVE_LOADED_FILES.size}; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+    COMPETITIVE_STATUS_PREFIX = `Loaded files: ${COMPETITIVE_LOADED_FILES.size}; `;
+    COMPETITIVE_STATUS_SUFFIX = '';
+    COMPETITIVE_STATUS_TITLE_SOURCE = sourceLabel;
+    updateCompetitiveStatusText();
   }
   refreshChart();
 }
@@ -1203,8 +1333,10 @@ async function loadLatestCompetitiveFileIfAvailable() {
     const label = formatName ? `${formatName} ` : '';
     if (status) {
       status.classList.add('auto-loaded');
-      status.textContent = `Automatically loaded the latest ${label}VGC data`;
-      status.title = `${found.fileName} loaded locally; Pokémon with competitive data: ${Object.keys(COMPETITIVE_SPEED_HINTS).length}`;
+      COMPETITIVE_STATUS_PREFIX = `Automatically loaded the latest ${label}VGC data (`;
+      COMPETITIVE_STATUS_SUFFIX = ')';
+      COMPETITIVE_STATUS_TITLE_SOURCE = `${found.fileName} loaded locally`;
+      updateCompetitiveStatusText();
     }
 
     refreshChart();
@@ -1266,15 +1398,16 @@ async function loadMultipleCompetitiveFiles(files) {
     }
 
     COMPETITIVE_SPEED_HINTS = rankMergedCompetitiveHints(COMPETITIVE_SPEED_MERGED);
-    const totalLoaded = Object.keys(COMPETITIVE_SPEED_HINTS).length;
     const totalFiles = COMPETITIVE_LOADED_FILES.size;
 
     if (status) {
       status.classList.remove('auto-loaded');
       const skipped = skippedFiles ? `; skipped ${skippedFiles} duplicate${skippedFiles === 1 ? '' : 's'}` : '';
       const replaced = removedAutoLatest ? 'Replaced automatically loaded latest data. ' : '';
-      status.textContent = `${replaced}Loaded files: ${totalFiles}; Pokémon with competitive data: ${totalLoaded}${skipped}`;
-      status.title = summaries.join(' | ');
+      COMPETITIVE_STATUS_PREFIX = `${replaced}Loaded files: ${totalFiles}; `;
+      COMPETITIVE_STATUS_SUFFIX = skipped;
+      COMPETITIVE_STATUS_TITLE_SOURCE = summaries.join(' | ');
+      updateCompetitiveStatusText();
     }
 
     if (addedFiles) refreshChart();
@@ -1314,8 +1447,7 @@ async function updateCompetitiveData() {
 
 function getLikelySpeedValue(p) {
   const values = speedSpreadValues(p.speed);
-  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
-  const hints = COMPETITIVE_SPEED_HINTS[hintKey] || [];
+  const hints = competitiveHintsForPokemon(p);
 
   if (!hints.length) {
     return values.find(v => v.bucket === 'base').value;
@@ -1328,8 +1460,7 @@ function getLikelySpeedValue(p) {
 
 function renderSpeedSpread(p) {
   const values = speedSpreadValues(p.speed);
-  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
-  const hints = COMPETITIVE_SPEED_HINTS[hintKey] || [];
+  const hints = competitiveHintsForPokemon(p);
   const hasCompetitiveData = hints.length > 0;
 
   // Only collapse to one speed if this Pokémon actually has loaded Smogon data.
@@ -1472,7 +1603,7 @@ function setPageRowHeight(content) {
 }
 
 
-function renumberPages(container) {
+function renumberPages(container, visiblePokemonCount = 0) {
   const sheets = [...container.querySelectorAll('.sheet')];
   const total = sheets.length;
 
@@ -1487,7 +1618,8 @@ function renumberPages(container) {
 
     toggles.push(DISPLAY_SETTINGS.fullyEvolvedOnly ? 'Fully evolved only' : 'All Pokémon');
 
-    if (DISPLAY_SETTINGS.loadedOnly) toggles.push('Competitive only');
+    if (DISPLAY_SETTINGS.loadedOnly) toggles.push('Loaded files only');
+    if (DISPLAY_SETTINGS.regulationMAOnly) toggles.push('Regulation M-A only');
     if (DISPLAY_SETTINGS.separateMegas && !DISPLAY_SETTINGS.orderBySpeed && !DISPLAY_SETTINGS.orderByProbableSpeed) {
       toggles.push('Megas separated');
     }
@@ -1509,7 +1641,7 @@ function renumberPages(container) {
   sheets.forEach((sheet, i) => {
     const sub = sheet.querySelector('.subtitle');
     if (sub) {
-      sub.textContent = `${sortLabel()} • ${toggleLabel()} • ${statsLabel()} • Page ${i + 1} of ${total}`;
+      sub.textContent = `${sortLabel()} • ${toggleLabel()} • ${statsLabel()} • Page ${i + 1} of ${total} • ${visiblePokemonCount} Pokémon shown`;
     }
 
     const badge = sheet.querySelector('.badge');
@@ -1520,8 +1652,11 @@ function renumberPages(container) {
 }
 
 function pokemonHasCompetitiveData(p) {
-  const hintKey = normaliseCompetitiveName(p.competitiveName || p.name);
-  return Boolean(COMPETITIVE_SPEED_HINTS[hintKey] && COMPETITIVE_SPEED_HINTS[hintKey].length);
+  return competitiveHintsForPokemon(p).length > 0;
+}
+
+function pokemonIsRegulationMA(p) {
+  return competitiveHintKeys(p).some(key => REGULATION_MA_KEYS.has(key));
 }
 
 function getVisiblePokemon(pokemon) {
@@ -1529,6 +1664,10 @@ function getVisiblePokemon(pokemon) {
 
   if (DISPLAY_SETTINGS.loadedOnly) {
     visible = visible.filter(pokemonHasCompetitiveData);
+  }
+
+  if (DISPLAY_SETTINGS.regulationMAOnly) {
+    visible = visible.filter(pokemonIsRegulationMA);
   }
 
   if (DISPLAY_SETTINGS.fullyEvolvedOnly) {
@@ -1543,9 +1682,11 @@ function getVisiblePokemon(pokemon) {
         if (aMega !== bMega) return aMega - bMega;
       }
 
-      const aName = a.isMega ? (a.megaSortName || a.name) : (a.alphaSortName || a.name);
-      const bName = b.isMega ? (b.megaSortName || b.name) : (b.alphaSortName || b.name);
-      return aName.localeCompare(bName) || a.name.localeCompare(b.name);
+      const aName = alphabeticalSortName(a);
+      const bName = alphabeticalSortName(b);
+      return aName.localeCompare(bName)
+        || alphabeticalSortRank(a) - alphabeticalSortRank(b)
+        || a.name.localeCompare(b.name);
     }).map(p => ({
       ...p,
       section: DISPLAY_SETTINGS.separateMegas && p.isMega
@@ -1559,7 +1700,10 @@ function getVisiblePokemon(pokemon) {
 
 
 function refreshChart() {
-  if (POKEMON_CACHE.length) paginate(getVisiblePokemon(POKEMON_CACHE));
+  if (POKEMON_CACHE.length) {
+    paginate(getVisiblePokemon(POKEMON_CACHE));
+    updateCompetitiveStatusText();
+  }
 }
 
 function paginate(pokemon) {
@@ -1575,13 +1719,15 @@ function paginate(pokemon) {
     empty.className = 'section-header letter-header';
     const span = document.createElement('span');
     span.textContent = DISPLAY_SETTINGS.loadedOnly
-      ? 'No loaded Smogon stats yet'
+      ? 'No Pokémon from loaded files'
+      : DISPLAY_SETTINGS.regulationMAOnly
+        ? 'No Regulation M-A Pokémon'
       : DISPLAY_SETTINGS.fullyEvolvedOnly
         ? 'No fully evolved Pokémon'
         : 'No Pokémon';
     empty.appendChild(span);
     content.appendChild(empty);
-    renumberPages(container);
+    renumberPages(container, pokemon.length);
     wrapSheetsForScreen(container);
     return;
   }
@@ -1702,7 +1848,7 @@ function paginate(pokemon) {
     }
 
     setPageRowHeight(content);
-    renumberPages(container);
+    renumberPages(container, pokemon.length);
     wrapSheetsForScreen(container);
     return;
   }
@@ -1735,7 +1881,7 @@ function paginate(pokemon) {
   }
 
   setPageRowHeight(content);
-  renumberPages(container);
+  renumberPages(container, pokemon.length);
   wrapSheetsForScreen(container);
 }
 
@@ -1878,6 +2024,25 @@ function setupControlPanel() {
     loadedOnly.checked = DISPLAY_SETTINGS.loadedOnly;
     loadedOnly.addEventListener('change', () => {
       DISPLAY_SETTINGS.loadedOnly = loadedOnly.checked;
+      if (loadedOnly.checked) {
+        DISPLAY_SETTINGS.regulationMAOnly = false;
+        const regulationMAOnly = document.getElementById('toggleRegulationMAOnly');
+        if (regulationMAOnly) regulationMAOnly.checked = false;
+      }
+      refreshChart();
+    });
+  }
+
+  const regulationMAOnly = document.getElementById('toggleRegulationMAOnly');
+  if (regulationMAOnly) {
+    regulationMAOnly.checked = DISPLAY_SETTINGS.regulationMAOnly;
+    regulationMAOnly.addEventListener('change', () => {
+      DISPLAY_SETTINGS.regulationMAOnly = regulationMAOnly.checked;
+      if (regulationMAOnly.checked) {
+        DISPLAY_SETTINGS.loadedOnly = false;
+        const loadedOnly = document.getElementById('toggleLoadedOnly');
+        if (loadedOnly) loadedOnly.checked = false;
+      }
       refreshChart();
     });
   }
