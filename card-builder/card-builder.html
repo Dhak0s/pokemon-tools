@@ -121,7 +121,6 @@
     border-top: 2px solid #5e35b1 !important;
     z-index: 500;
   }
-/* NOTES PRINT AREA */
   .notes-print-area {
     position: absolute;
     inset: 0;
@@ -636,7 +635,6 @@
     position: relative;
   }
   .notes-label { display: none; }
-  .notes-lines { display: none; }
 
   @media print {
     .notes-label {
@@ -649,17 +647,6 @@
       padding-bottom: 6px;
       flex-shrink: 0;
     }
-    .notes-lines {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      justify-content: space-around;
-    }
-  }
-  .note-line {
-    border-bottom: 1px solid #ccc;
-    flex: 1;
-    max-height: 24px;
   }
 .stat-label {
   cursor: pointer;
@@ -910,6 +897,7 @@
       font-size: 16px;
       border-radius: 10px;
     }
+
   }
 
   /* Very small phones */
@@ -927,6 +915,7 @@
       padding: 10px 12px;
       font-size: 14px;
     }
+
   }
 
   @media print {
@@ -1101,15 +1090,8 @@
           <button onclick="window.print()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.print();}" class="notes-print-btn" tabindex="27">🖨 Print</button>
         </div>
         <div class="notes-label">YOUR NOTES</div>
-        <div class="notes-lines">
-          <div class="note-line"></div>
-          <div class="note-line"></div>
-          <div class="note-line"></div>
-          <div class="note-line"></div>
-          <div class="note-line"></div>
-          <div class="note-line"></div>
-        </div>
       </div>
+
     </div>
   </div>
 </div><!-- /card -->
