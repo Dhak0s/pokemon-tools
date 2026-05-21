@@ -1589,15 +1589,18 @@ function parseShowdown(text) {
   // "Nickname (Species) @ Item" — species is in parens, ignore gender (F)/(M)/(f)/(m)
   // "Sableye (F) @ Item" — no nickname, parens are just gender
   // "Sableye @ Item" — plain
-  const speciesMatch = nameSection.match(/\(([^FM)][^)]*)\)/i) || // multi-char species in parens
-                       nameSection.match(/\(([A-Z][a-z][^)]*)\)/); // capitalised species
+  const parenMatches = [...nameSection.matchAll(/\(([^)]+)\)/g)];
+  const speciesMatch = parenMatches.find(match => !/^[fm]$/i.test(match[1].trim()));
   const rawName = speciesMatch
-    ? speciesMatch[1].trim()          // use species inside parens
-    : nameSection.replace(/\(.\)\s*/, '').trim(); // strip gender paren, use full name
+    ? speciesMatch[1].trim()
+    : nameSection.replace(/\s*\([fm]\)\s*/ig, ' ').trim(); // strip gender paren, use full name
+  const nickname = speciesMatch
+    ? nameSection.slice(0, speciesMatch.index).trim()
+    : '';
 
   const nameLine = showdownSlugToPokeAPI(rawName.toLowerCase().replace(/\s+/g, '-'));
 
-  const result = { name: nameLine, ability: null, item: itemRaw, shiny: false, evs: [0,0,0,0,0,0], natureMods: [1,1,1,1,1,1], moves: [] };
+  const result = { name: nameLine, displayName: nickname || null, ability: null, item: itemRaw, shiny: false, evs: [0,0,0,0,0,0], natureMods: [1,1,1,1,1,1], moves: [] };
 
   for (const line of lines.slice(1)) {
     if (/^Ability:/i.test(line)) {
@@ -1722,7 +1725,8 @@ async function loadPokemon() {
     isShiny = pendingShowdown?.shiny ?? false;
 
     // Update basic info
-    const displayName = currentPokemon.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const speciesDisplayName = currentPokemon.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const displayName = pendingShowdown?.displayName || speciesDisplayName;
     document.getElementById('pokemonName').textContent = displayName.toUpperCase();
     document.title = `${displayName} Card`;
 
